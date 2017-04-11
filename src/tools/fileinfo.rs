@@ -1,11 +1,9 @@
 //! A tool for analysis of binary files.
 
 use std::env;
-use std::io;
 use std::path::Path;
 use std::process;
 
-use error::Result;
 use analysis::AnalysisArguments;
 use error::Result;
 use fileinfo::Fileinfo;
@@ -32,14 +30,4 @@ fn run() -> Result<()> {
     Ok(())
 }
 
-/// Implementation of the `main()` function for the tool.
-///
-/// Runs the tool. If the tool fails, it prints the error to the standard
-/// error. Then, it terminates the process. If the tool finished successfully,
-/// the exit code will be 0, otherwise 1.
-pub fn main() {
-    if let Err(ref e) = run() {
-        print_error(e, &mut io::stderr());
-        process::exit(1);
-    }
-}
+generate_main_for_tool!(run);
