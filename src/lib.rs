@@ -23,6 +23,15 @@
 // `error_chain!` can recurse deeply.
 #![recursion_limit = "1024"]
 
+// Add more lint checks.
+#![deny(unsafe_code)]
+#![deny(unstable_features)]
+#![warn(trivial_casts)]
+#![warn(trivial_numeric_casts)]
+#![warn(unused_qualifications)]
+#![warn(unused_extern_crates)]
+#![warn(unused_import_braces)]
+
 extern crate clap;
 extern crate hyper;
 extern crate json;
