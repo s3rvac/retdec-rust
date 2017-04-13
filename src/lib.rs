@@ -23,11 +23,15 @@
 // `error_chain!` can recurse deeply.
 #![recursion_limit = "1024"]
 
+extern crate clap;
 extern crate hyper;
 extern crate json;
 extern crate multipart;
 #[macro_use]
 extern crate error_chain;
+
+/// Crate version.
+pub const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
 pub mod analysis;
 pub mod connection;
