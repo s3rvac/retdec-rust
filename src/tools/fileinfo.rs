@@ -38,6 +38,10 @@ fn parse_args<'a>(args: &Vec<String>) -> ArgMatches<'a> {
             // It is important not to require the API URL by default because it
             // enables the use of the RETDEC_API_URL environment variable.
             .help("Custom URL to the retdec.com's API."))
+        .arg(Arg::with_name("verbose")
+            .short("v")
+            .long("verbose")
+            .help("Print all available information about the input file"))
         .get_matches_from(args)
 }
 
@@ -56,6 +60,7 @@ fn run(args: &Vec<String>) -> Result<()> {
 
     let fileinfo = Fileinfo::new(settings);
     let args = AnalysisArguments::new()
+        .with_verbose(args.is_present("verbose"))
         .with_input_file(Path::new(&input_file).to_path_buf());
     let mut analysis = fileinfo.start_analysis(args)?;
     analysis.wait_until_finished()?;
@@ -111,5 +116,23 @@ mod tests {
     fn parse_args_correctly_parses_api_url_long_form() {
         let args = parse_args(&args!["--api-url", "URL", "file.exe"]);
         assert_eq!(args.value_of("api_url"), Some("URL"));
+    }
+
+    #[test]
+    fn parse_args_does_not_set_verbose_by_default() {
+        let args = parse_args(&args!["file.exe"]);
+        assert!(!args.is_present("verbose"));
+    }
+
+    #[test]
+    fn parse_args_correctly_parses_verbose_short_form() {
+        let args = parse_args(&args!["-v", "file.exe"]);
+        assert!(args.is_present("verbose"));
+    }
+
+    #[test]
+    fn parse_args_correctly_parses_verbose_long_form() {
+        let args = parse_args(&args!["--verbose", "file.exe"]);
+        assert!(args.is_present("verbose"));
     }
 }

@@ -24,6 +24,11 @@ impl AnalysisArguments {
         self
     }
 
+    pub fn with_verbose(mut self, verbose: bool) -> Self {
+        self.verbose = Some(verbose);
+        self
+    }
+
     pub fn verbose(&self) -> Option<bool> {
         self.verbose
     }
