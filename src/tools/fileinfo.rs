@@ -1,5 +1,7 @@
 //! A tool for analysis of binary files.
 
+use std::io::Write;
+use std::io;
 use std::path::Path;
 
 use clap::App;
@@ -9,6 +11,7 @@ use clap::ArgMatches;
 
 use analysis::AnalysisArguments;
 use error::Result;
+use error::ResultExt;
 use fileinfo::Fileinfo;
 use settings::Settings;
 use VERSION;
@@ -45,6 +48,13 @@ fn parse_args<'a>(args: &Vec<String>) -> ArgMatches<'a> {
         .get_matches_from(args)
 }
 
+fn print_analysis_result(output: &str) -> Result<()> {
+    let mut stdout = io::stdout();
+    stdout.write(output.as_bytes())
+        .chain_err(|| "failed to print the result on the standard output")?;
+    Ok(())
+}
+
 fn run(args: &Vec<String>) -> Result<()> {
     let args = parse_args(args);
 
@@ -65,7 +75,7 @@ fn run(args: &Vec<String>) -> Result<()> {
     let mut analysis = fileinfo.start_analysis(args)?;
     analysis.wait_until_finished()?;
     let output = analysis.get_output()?;
-    print!("{}", output);
+    print_analysis_result(&output)?;
     Ok(())
 }
 
