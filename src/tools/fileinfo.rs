@@ -41,6 +41,14 @@ fn parse_args<'a>(args: &Vec<String>) -> ArgMatches<'a> {
             // It is important not to require the API URL by default because it
             // enables the use of the RETDEC_API_URL environment variable.
             .help("Custom URL to the retdec.com's API."))
+        .arg(Arg::with_name("output_format")
+            .short("f")
+            .long("output-format")
+            .takes_value(true)
+            .value_name("FORMAT")
+            .possible_values(&["plain", "json"])
+            .default_value("plain")
+            .help("Format of the output from the analysis"))
         .arg(Arg::with_name("verbose")
             .short("v")
             .long("verbose")
@@ -70,6 +78,7 @@ fn run(args: &Vec<String>) -> Result<()> {
 
     let fileinfo = Fileinfo::new(settings);
     let args = AnalysisArguments::new()
+        .with_output_format(args.value_of("output_format").unwrap())
         .with_verbose(args.is_present("verbose"))
         .with_input_file(Path::new(&input_file).to_path_buf());
     let mut analysis = fileinfo.start_analysis(args)?;
@@ -126,6 +135,24 @@ mod tests {
     fn parse_args_correctly_parses_api_url_long_form() {
         let args = parse_args(&args!["--api-url", "URL", "file.exe"]);
         assert_eq!(args.value_of("api_url"), Some("URL"));
+    }
+
+    #[test]
+    fn parse_args_sets_plain_as_default_output_format() {
+        let args = parse_args(&args!["file.exe"]);
+        assert_eq!(args.value_of("output_format"), Some("plain"));
+    }
+
+    #[test]
+    fn parse_args_correctly_parses_output_format_short_form() {
+        let args = parse_args(&args!["-f", "json", "file.exe"]);
+        assert_eq!(args.value_of("output_format"), Some("json"));
+    }
+
+    #[test]
+    fn parse_args_correctly_parses_output_format_long_form() {
+        let args = parse_args(&args!["--output-format", "json", "file.exe"]);
+        assert_eq!(args.value_of("output_format"), Some("json"));
     }
 
     #[test]

@@ -27,6 +27,9 @@ impl Fileinfo {
         let mut conn = self.conn_factory.new_connection();
         let url = format!("{}/fileinfo/analyses", conn.api_url());
         let mut request_args = HashMap::new();
+        if let Some(output_format) = args.output_format() {
+            request_args.insert("output_format".to_string(), output_format);
+        };
         if let Some(verbose) = args.verbose() {
             request_args.insert("verbose".to_string(), verbose.to_string());
         };

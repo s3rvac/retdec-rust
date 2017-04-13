@@ -10,6 +10,7 @@ use error::Result;
 /// Arguments for an analysis.
 #[derive(Default)]
 pub struct AnalysisArguments {
+    output_format: Option<String>,
     verbose: Option<bool>,
     input_file: Option<PathBuf>,
 }
@@ -24,9 +25,18 @@ impl AnalysisArguments {
         self
     }
 
+    pub fn with_output_format(mut self, output_format: &str) -> Self {
+        self.output_format = Some(output_format.to_string());
+        self
+    }
+
     pub fn with_verbose(mut self, verbose: bool) -> Self {
         self.verbose = Some(verbose);
         self
+    }
+
+    pub fn output_format(&self) -> Option<String> {
+        self.output_format.clone()
     }
 
     pub fn verbose(&self) -> Option<bool> {
