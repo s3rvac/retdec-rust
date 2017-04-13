@@ -13,7 +13,7 @@ use fileinfo::Fileinfo;
 use settings::Settings;
 use VERSION;
 
-fn parse_args<'a>() -> ArgMatches<'a> {
+fn parse_args<'a>(args: &Vec<String>) -> ArgMatches<'a> {
     App::new("fileinfo")
         .version(VERSION)
         .about("Analyzes the given binary file via retdec.com's API.")
@@ -38,11 +38,11 @@ fn parse_args<'a>() -> ArgMatches<'a> {
             // It is important not to require the API URL by default because it
             // enables the use of the RETDEC_API_URL environment variable.
             .help("Custom URL to the retdec.com's API."))
-        .get_matches()
+        .get_matches_from(args)
 }
 
-fn run() -> Result<()> {
-    let args = parse_args();
+fn run(args: &Vec<String>) -> Result<()> {
+    let args = parse_args(args);
 
     let mut settings = Settings::new();
     if let Some(api_key) = args.value_of("api_key") {
