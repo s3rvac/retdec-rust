@@ -65,3 +65,51 @@ fn run(args: &Vec<String>) -> Result<()> {
 }
 
 generate_main_for_tool!(run);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    macro_rules! args {
+        ($($arg:expr),*) => {
+            {
+                let mut args = Vec::new();
+                args.push("fileinfo".to_string());
+                $(
+                    args.push($arg.to_string());
+                )*
+                args
+            }
+        }
+    }
+
+    #[test]
+    fn parse_args_correctly_parses_input_file() {
+        let args = parse_args(&args!["file.exe"]);
+        assert_eq!(args.value_of("FILE"), Some("file.exe"));
+    }
+
+    #[test]
+    fn parse_args_correctly_parses_api_key_short_form() {
+        let args = parse_args(&args!["-k", "KEY", "file.exe"]);
+        assert_eq!(args.value_of("api_key"), Some("KEY"));
+    }
+
+    #[test]
+    fn parse_args_correctly_parses_api_key_long_form() {
+        let args = parse_args(&args!["--api-key", "KEY", "file.exe"]);
+        assert_eq!(args.value_of("api_key"), Some("KEY"));
+    }
+
+    #[test]
+    fn parse_args_correctly_parses_api_url_short_form() {
+        let args = parse_args(&args!["-u", "URL", "file.exe"]);
+        assert_eq!(args.value_of("api_url"), Some("URL"));
+    }
+
+    #[test]
+    fn parse_args_correctly_parses_api_url_long_form() {
+        let args = parse_args(&args!["--api-url", "URL", "file.exe"]);
+        assert_eq!(args.value_of("api_url"), Some("URL"));
+    }
+}
