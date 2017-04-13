@@ -20,11 +20,6 @@ impl AnalysisArguments {
         AnalysisArguments::default()
     }
 
-    pub fn with_input_file(mut self, input_file: PathBuf) -> Self {
-        self.input_file = Some(input_file);
-        self
-    }
-
     pub fn with_output_format(mut self, output_format: &str) -> Self {
         self.output_format = Some(output_format.to_string());
         self
@@ -32,6 +27,11 @@ impl AnalysisArguments {
 
     pub fn with_verbose(mut self, verbose: bool) -> Self {
         self.verbose = Some(verbose);
+        self
+    }
+
+    pub fn with_input_file(mut self, input_file: PathBuf) -> Self {
+        self.input_file = Some(input_file);
         self
     }
 
