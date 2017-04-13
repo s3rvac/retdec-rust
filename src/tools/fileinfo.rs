@@ -73,8 +73,7 @@ fn run(args: &Vec<String>) -> Result<()> {
     if let Some(api_url) = args.value_of("api_url") {
         settings = settings.with_api_url(api_url);
     }
-    let input_file = args.value_of("FILE")
-        .expect("clap did not properly handle the absence of FILE");
+    let input_file = args.value_of("FILE").unwrap();
 
     let fileinfo = Fileinfo::new(settings);
     let args = AnalysisArguments::new()
