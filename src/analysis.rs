@@ -8,7 +8,7 @@ use connection::APIConnection;
 use error::Result;
 
 /// Arguments for an analysis.
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct AnalysisArguments {
     output_format: Option<String>,
     verbose: Option<bool>,

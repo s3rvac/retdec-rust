@@ -19,7 +19,7 @@ const DEFAULT_API_URL: &'static str = "https://retdec.com/service/api";
 /// // The API URL is provided by default:
 /// assert_eq!(s.api_url(), "https://retdec.com/service/api".to_string());
 /// ```
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Settings {
     api_key: Option<String>,
     api_url: String,
