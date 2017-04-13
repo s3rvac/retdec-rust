@@ -9,12 +9,12 @@ use clap::AppSettings;
 use clap::Arg;
 use clap::ArgMatches;
 
+use VERSION;
 use analysis::AnalysisArguments;
 use error::Result;
 use error::ResultExt;
 use fileinfo::Fileinfo;
 use settings::Settings;
-use VERSION;
 
 fn parse_args<'a>(args: &Vec<String>) -> ArgMatches<'a> {
     App::new("fileinfo")
