@@ -118,12 +118,11 @@ pub trait APIConnection {
 
     fn send_get_request(&mut self,
                         url: &str,
-                        args: &HashMap<String, String>) -> Result<APIResponse>;
+                        args: &APIArguments) -> Result<APIResponse>;
 
     fn send_post_request(&mut self,
                          url: &str,
-                         args: &HashMap<String, String>,
-                         files: &HashMap<String, PathBuf>) -> Result<APIResponse>;
+                         files: &APIArguments) -> Result<APIResponse>;
 }
 
 /// Wrapper of API connections that automatically verifies that requests
@@ -155,7 +154,7 @@ impl<'a> APIConnection for ResponseVerifyingAPIConnection<'a> {
 
     fn send_get_request(&mut self,
                         url: &str,
-                        args: &HashMap<String, String>) -> Result<APIResponse> {
+                        args: &APIArguments) -> Result<APIResponse> {
         let response = self.conn.send_get_request(url, args)?;
         self.ensure_request_succeeded(&response)?;
         Ok(response)
@@ -163,9 +162,8 @@ impl<'a> APIConnection for ResponseVerifyingAPIConnection<'a> {
 
     fn send_post_request(&mut self,
                          url: &str,
-                         args: &HashMap<String, String>,
-                         files: &HashMap<String, PathBuf>) -> Result<APIResponse> {
-        let response = self.conn.send_post_request(url, args, files)?;
+                         args: &APIArguments) -> Result<APIResponse> {
+        let response = self.conn.send_post_request(url, args)?;
         self.ensure_request_succeeded(&response)?;
         Ok(response)
     }
@@ -185,10 +183,10 @@ impl HyperAPIConnection {
     fn prepare_request(&self,
                        method: HyperMethod,
                        url: &str,
-                       args: &HashMap<String, String>) -> Result<HyperRequest<Fresh>> {
+                       args: &APIArguments) -> Result<HyperRequest<Fresh>> {
         let mut parsed_url = HyperUrl::parse(&url)
             .chain_err(|| "invalid API URL")?;
-        for (key, value) in args {
+        for (key, value) in args.args() {
             parsed_url.query_pairs_mut().append_pair(key, value);
         }
         let mut request = HyperRequest::<Fresh>::new(method, parsed_url)
@@ -233,7 +231,7 @@ impl APIConnection for HyperAPIConnection {
 
     fn send_get_request(&mut self,
                         url: &str,
-                        args: &HashMap<String, String>) -> Result<APIResponse> {
+                        args: &APIArguments) -> Result<APIResponse> {
         let request = self.prepare_request(HyperMethod::Get, &url, &args)
             .chain_err(|| format!("failed to prepare a GET request to {}", url))?;
         let response = request.start()
@@ -245,12 +243,11 @@ impl APIConnection for HyperAPIConnection {
 
     fn send_post_request(&mut self,
                          url: &str,
-                         args: &HashMap<String, String>,
-                         files: &HashMap<String, PathBuf>) -> Result<APIResponse> {
+                         args: &APIArguments) -> Result<APIResponse> {
         let request = self.prepare_request(HyperMethod::Post, &url, &args)
             .chain_err(|| format!("failed to prepare a POST request to {}", url))?;
         let mut mp = Multipart::new();
-        for (name, file) in files {
+        for (name, file) in args.files() {
             mp.add_file(name.clone(), file.to_str().ok_or(format!("cannot convert {:?} to str", file))?);
         }
         // The retdec.com API does not support chunked requests, so ensure that

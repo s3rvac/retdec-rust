@@ -1,9 +1,9 @@
 //! Analyses from the fileinfo service.
 
-use std::collections::HashMap;
 use std::path::PathBuf;
 use std::thread;
 
+use connection::APIArguments;
 use connection::APIConnection;
 use error::Result;
 
@@ -71,7 +71,7 @@ impl Analysis {
             thread::sleep(::std::time::Duration::from_millis(500));
 
             let status_url = format!("{}/fileinfo/analyses/{}/status", self.conn.api_url(), self.id);
-            let args = HashMap::new();
+            let args = APIArguments::new();
             let response = self.conn.send_get_request(&status_url, &args)?;
             let content = response.body_as_json()?;
             let finished = content["finished"].as_bool().unwrap();
@@ -84,7 +84,7 @@ impl Analysis {
 
     pub fn get_output(&mut self) -> Result<String> {
         let output_url = format!("{}/fileinfo/analyses/{}/output", self.conn.api_url(), self.id);
-        let args = HashMap::new();
+        let args = APIArguments::new();
         let response = self.conn.send_get_request(&output_url, &args)?;
         response.body_as_string()
     }
