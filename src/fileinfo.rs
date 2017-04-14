@@ -11,17 +11,39 @@ use error::ResultExt;
 use settings::Settings;
 
 /// File-analyzing service.
+///
+/// # Examples
+///
+/// ```no_run
+/// use std::path::Path;
+///
+/// use retdec::analysis::AnalysisArguments;
+/// use retdec::fileinfo::Fileinfo;
+/// use retdec::settings::Settings;
+///
+/// let settings = Settings::new()
+///     .with_api_key("MY-API-KEY");
+/// let fileinfo = Fileinfo::new(settings);
+/// let args = AnalysisArguments::new()
+///     .with_input_file(Path::new(&"file.exe").to_path_buf());
+/// let mut analysis = fileinfo.start_analysis(&args).unwrap();
+/// analysis.wait_until_finished().unwrap();
+/// let output = analysis.get_output().unwrap();
+/// print!("{}", output);
+/// ```
 pub struct Fileinfo {
     conn_factory: Box<APIConnectionFactory>,
 }
 
 impl Fileinfo {
+    /// Creates a new instance of the file-analyzing service.
     pub fn new(settings: Settings) -> Self {
         Fileinfo {
             conn_factory: Box::new(HyperAPIConnectionFactory::new(settings)),
         }
     }
 
+    /// Starts a new file analysis with the given arguments.
     pub fn start_analysis(&self, args: &AnalysisArguments) -> Result<Analysis> {
         let mut conn = self.conn_factory.new_connection();
         let url = format!("{}/fileinfo/analyses", conn.api_url());
