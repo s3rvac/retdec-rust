@@ -1,4 +1,4 @@
-//! A Rust library providing easy access to the
+//! A Rust library and tools providing easy access to the
 //! [retdec.com](https://retdec.com) decompilation service through their public
 //! [REST API](https://retdec.com/api/).
 //!
