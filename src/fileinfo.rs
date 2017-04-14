@@ -69,4 +69,100 @@ impl Fileinfo {
         }
         Ok(api_args)
     }
+
+    #[cfg(test)]
+    fn with_conn_factory(conn_factory: Box<APIConnectionFactory>) -> Self {
+        Fileinfo {
+            conn_factory: conn_factory,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use std::cell::RefCell;
+    use std::path::Path;
+    use std::rc::Rc;
+
+    use analysis::AnalysisArguments;
+    use connection::APIArgumentsBuilder;
+    use connection::APIConnectionFactoryMock;
+    use connection::APIConnectionMock;
+    use connection::APIResponseBuilder;
+
+    fn create_fileinfo(settings: Settings) -> (Rc<RefCell<APIConnectionMock>>, Fileinfo) {
+        let conn = Rc::new(
+            RefCell::new(
+                APIConnectionMock::new(settings.clone())
+            )
+        );
+        let conn_factory = Box::new(
+            APIConnectionFactoryMock::new(
+                settings.clone(),
+                conn.clone()
+            )
+        );
+        (conn, Fileinfo::with_conn_factory(conn_factory))
+    }
+
+    #[test]
+    fn fileinfo_start_analysis_starts_analysis_with_correct_arguments() {
+        let (conn, fileinfo) = create_fileinfo(Settings::new());
+        let input_file = Path::new(&"file.exe").to_path_buf();
+        let args = AnalysisArguments::new()
+            .with_output_format("json")
+            .with_verbose(true)
+            .with_input_file(input_file.clone());
+        conn.borrow_mut().add_response(
+            "POST",
+            "https://retdec.com/service/api/fileinfo/analyses",
+            Ok(
+                APIResponseBuilder::new()
+                    .with_status_code(200)
+                    .with_body(br#"{
+                        "id": "ID"
+                    }"#)
+                    .build()
+            )
+        );
+
+        let analysis = fileinfo.start_analysis(&args)
+            .expect("analysis should have succeeded");
+
+        assert_eq!(analysis.id(), &"ID");
+        assert!(conn.borrow_mut().request_sent(
+            "POST",
+            "https://retdec.com/service/api/fileinfo/analyses",
+            APIArgumentsBuilder::new()
+                .with_string_arg("output_format", "json")
+                .with_bool_arg("verbose", true)
+                .with_file("input", input_file.clone())
+                .build()
+        ));
+    }
+
+    #[test]
+    fn fileinfo_start_analysis_returns_error_when_input_file_is_not_given() {
+        let (conn, fileinfo) = create_fileinfo(Settings::new());
+        let args = AnalysisArguments::new();
+        conn.borrow_mut().add_response(
+            "POST",
+            "https://retdec.com/service/api/fileinfo/analyses",
+            Ok(
+                APIResponseBuilder::new()
+                    .with_status_code(200)
+                    .with_body(br#"{
+                        "id": "ID"
+                    }"#)
+                    .build()
+            )
+        );
+
+        let result = fileinfo.start_analysis(&args);
+
+        let err = result.err().expect("expected start_analysis() to fail");
+        assert_eq!(err.description(), "no input file given");
+    }
 }
