@@ -64,7 +64,7 @@ impl Fileinfo {
                 api_args.add_file("input", input_file);
             },
             None => {
-                bail!("no input file");
+                bail!("no input file given");
             },
         }
         Ok(api_args)
