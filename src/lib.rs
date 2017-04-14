@@ -43,8 +43,9 @@ extern crate error_chain;
 pub const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
 pub mod analysis;
-pub mod connection;
 pub mod error;
 pub mod fileinfo;
 pub mod settings;
 pub mod tools;
+
+mod connection;
