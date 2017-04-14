@@ -308,7 +308,10 @@ impl APIConnection for HyperAPIConnection {
             .chain_err(|| format!("failed to prepare a POST request to {}", url))?;
         let mut mp = Multipart::new();
         for (name, file) in args.files() {
-            mp.add_file(name.clone(), file.to_str().ok_or(format!("cannot convert {:?} to str", file))?);
+            mp.add_file(
+                name.clone(),
+                file.to_str().ok_or(format!("cannot convert {:?} to str", file))?
+            );
         }
         // The retdec.com API does not support chunked requests, so ensure that
         // we send a request with the Content-Length header.
