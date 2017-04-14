@@ -26,14 +26,10 @@ impl Fileinfo {
         let mut conn = self.conn_factory.new_connection();
         let url = format!("{}/fileinfo/analyses", conn.api_url());
         let mut api_args = APIArguments::new();
-        if let Some(output_format) = args.output_format() {
-            api_args.add_string_arg("output_format", output_format);
-        };
-        if let Some(verbose) = args.verbose() {
-            api_args.add_bool_arg("verbose", verbose);
-        };
-        match args.input_file() {
-            Some(input_file) => {
+        api_args.add_opt_string_arg("output_format", args.output_format());
+        api_args.add_opt_bool_arg("verbose", args.verbose());
+        match *args.input_file() {
+            Some(ref input_file) => {
                 api_args.add_file("input", input_file);
             },
             None => {

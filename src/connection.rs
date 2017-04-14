@@ -82,11 +82,32 @@ impl APIArguments {
         self.args.insert(name.into(), value.into());
     }
 
+    pub fn add_opt_string_arg<N>(&mut self, name: N, value: &Option<String>)
+        where N: Into<String>
+    {
+        if let Some(ref value) = *value {
+            self.args.insert(name.into(), value.to_string());
+        }
+    }
+
     pub fn add_bool_arg<N>(&mut self, name: N, value: bool)
         where N: Into<String>
     {
         let value = if value { 1 } else { 0 };
         self.args.insert(name.into(), value.to_string());
+    }
+
+    pub fn add_opt_bool_arg<N>(&mut self, name: N, value: &Option<bool>)
+        where N: Into<String>
+    {
+        if let Some(value) = *value {
+            let value = if value { 1 } else { 0 };
+            self.args.insert(name.into(), value.to_string());
+        }
+    }
+
+    pub fn has_arg(&self, name: &str) -> bool {
+        self.args.contains_key(name)
     }
 
     pub fn get_arg(&self, name: &str) -> Option<&String> {
@@ -383,6 +404,24 @@ mod tests {
     }
 
     #[test]
+    fn api_arguments_add_opt_string_arg_adds_string_argument_when_some() {
+        let mut args = APIArguments::new();
+
+        args.add_opt_string_arg("name", &Some("value".to_string()));
+
+        assert_eq!(args.get_arg("name"), Some(&"value".to_string()));
+    }
+
+    #[test]
+    fn api_arguments_add_opt_string_arg_does_not_add_anything_when_none() {
+        let mut args = APIArguments::new();
+
+        args.add_opt_string_arg("name", &None);
+
+        assert!(!args.has_arg("name"));
+    }
+
+    #[test]
     fn api_arguments_add_bool_arg_adds_correct_arg_for_true() {
         let mut args = APIArguments::new();
 
@@ -398,6 +437,24 @@ mod tests {
         args.add_bool_arg("name", false);
 
         assert_eq!(args.get_arg("name"), Some(&"0".to_string()));
+    }
+
+    #[test]
+    fn api_arguments_add_opt_bool_arg_adds_bool_argument_when_some() {
+        let mut args = APIArguments::new();
+
+        args.add_opt_bool_arg("name", &Some(true));
+
+        assert_eq!(args.get_arg("name"), Some(&"1".to_string()));
+    }
+
+    #[test]
+    fn api_arguments_add_opt_bool_arg_does_not_add_anything_when_none() {
+        let mut args = APIArguments::new();
+
+        args.add_opt_bool_arg("name", &None);
+
+        assert!(!args.has_arg("name"));
     }
 
     #[test]

@@ -35,16 +35,16 @@ impl AnalysisArguments {
         self
     }
 
-    pub fn output_format(&self) -> Option<String> {
-        self.output_format.clone()
+    pub fn output_format(&self) -> &Option<String> {
+        &self.output_format
     }
 
-    pub fn verbose(&self) -> Option<bool> {
-        self.verbose
+    pub fn verbose(&self) -> &Option<bool> {
+        &self.verbose
     }
 
-    pub fn input_file(&self) -> Option<PathBuf> {
-        self.input_file.clone()
+    pub fn input_file(&self) -> &Option<PathBuf> {
+        &self.input_file
     }
 }
 
