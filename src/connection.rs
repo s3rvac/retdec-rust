@@ -206,7 +206,7 @@ impl HyperAPIConnection {
                        url: &str,
                        args: &APIArguments) -> Result<HyperRequest<Fresh>> {
         let mut parsed_url = HyperUrl::parse(&url)
-            .chain_err(|| "invalid API URL")?;
+            .chain_err(|| "invalid URL")?;
         for (key, value) in args.args() {
             parsed_url.query_pairs_mut().append_pair(key, value);
         }
