@@ -1,6 +1,7 @@
 //! Connectivity to `retdec.com`'s API.
 
 use std::collections::HashMap;
+use std::collections::hash_map::Iter as ArgIter;
 use std::io::Read;
 use std::path::PathBuf;
 use std::str;
@@ -57,6 +58,57 @@ impl APIResponse {
     pub fn body_as_json(&self) -> Result<JsonValue> {
         json::parse(self.body_as_str()?)
             .chain_err(|| "failed to parse API response body as JSON")
+    }
+}
+
+/// Arguments passed to the `retdec.com`s API via GET/HTTP requests.
+#[derive(Debug)]
+pub struct APIArguments {
+    args: HashMap<String, String>,
+    files: HashMap<String, PathBuf>,
+}
+
+impl APIArguments {
+    pub fn new() -> Self {
+        APIArguments {
+            args: HashMap::new(),
+            files: HashMap::new(),
+        }
+    }
+
+    pub fn add_string_arg<N, V>(&mut self, name: N, value: V)
+        where N: Into<String>, V: Into<String>
+    {
+        self.args.insert(name.into(), value.into());
+    }
+
+    pub fn add_bool_arg<N>(&mut self, name: N, value: bool)
+        where N: Into<String>
+    {
+        let value = if value { 1 } else { 0 };
+        self.args.insert(name.into(), value.to_string());
+    }
+
+    pub fn get_arg(&self, name: &str) -> Option<&String> {
+        self.args.get(name)
+    }
+
+    pub fn args(&self) -> ArgIter<String, String> {
+        self.args.iter()
+    }
+
+    pub fn add_file<N, P>(&mut self, name: N, file: P)
+        where N: Into<String>, P: Into<PathBuf>
+    {
+        self.files.insert(name.into(), file.into());
+    }
+
+    pub fn get_file(&self, name: &str) -> Option<&PathBuf> {
+        self.files.get(name)
+    }
+
+    pub fn files(&self) -> ArgIter<String, PathBuf> {
+        self.files.iter()
     }
 }
 
@@ -238,6 +290,8 @@ impl APIConnectionFactory for HyperAPIConnectionFactory {
 mod tests {
     use super::*;
 
+    use std::path::Path;
+
     struct APIResponseBuilder {
         response: APIResponse,
     }
@@ -320,5 +374,65 @@ mod tests {
             .build();
 
         assert_eq!(r.body_as_json().unwrap()["count"], 1);
+    }
+
+    #[test]
+    fn api_arguments_add_string_arg_adds_string_argument() {
+        let mut args = APIArguments::new();
+
+        args.add_string_arg("name", "value");
+
+        assert_eq!(args.get_arg("name"), Some(&"value".to_string()));
+    }
+
+    #[test]
+    fn api_arguments_add_bool_arg_adds_correct_arg_for_true() {
+        let mut args = APIArguments::new();
+
+        args.add_bool_arg("name", true);
+
+        assert_eq!(args.get_arg("name"), Some(&"1".to_string()));
+    }
+
+    #[test]
+    fn api_arguments_add_bool_arg_adds_correct_arg_for_false() {
+        let mut args = APIArguments::new();
+
+        args.add_bool_arg("name", false);
+
+        assert_eq!(args.get_arg("name"), Some(&"0".to_string()));
+    }
+
+    #[test]
+    fn api_arguments_args_returns_iterator_over_arguments() {
+        let mut args = APIArguments::new();
+
+        args.add_string_arg("name", "value");
+
+        let args: Vec<(&String, &String)> = args.args().collect();
+        assert_eq!(args.len(), 1);
+        assert_eq!(args[0].0, &"name".to_string());
+        assert_eq!(args[0].1, &"value".to_string());
+    }
+
+    #[test]
+    fn api_arguments_add_file_adds_file() {
+        let mut args = APIArguments::new();
+
+        args.add_file("input", "file.exe");
+
+        assert_eq!(args.get_file("input"), Some(&Path::new("file.exe").to_path_buf()));
+    }
+
+    #[test]
+    fn api_arguments_files_returns_iterator_over_files() {
+        let mut args = APIArguments::new();
+
+        args.add_file("input", "file.exe");
+
+        let files: Vec<(&String, &PathBuf)> = args.files().collect();
+        assert_eq!(files.len(), 1);
+        assert_eq!(files[0].0, &"input".to_string());
+        assert_eq!(files[0].1, &Path::new("file.exe").to_path_buf());
     }
 }
