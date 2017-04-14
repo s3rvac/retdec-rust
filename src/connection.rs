@@ -82,10 +82,10 @@ impl APIArguments {
         self.args.insert(name.into(), value.into());
     }
 
-    pub fn add_opt_string_arg<N>(&mut self, name: N, value: &Option<String>)
+    pub fn add_opt_string_arg<N>(&mut self, name: N, value: Option<&String>)
         where N: Into<String>
     {
-        if let Some(ref value) = *value {
+        if let Some(value) = value {
             self.args.insert(name.into(), value.to_string());
         }
     }
@@ -97,10 +97,10 @@ impl APIArguments {
         self.args.insert(name.into(), value.to_string());
     }
 
-    pub fn add_opt_bool_arg<N>(&mut self, name: N, value: &Option<bool>)
+    pub fn add_opt_bool_arg<N>(&mut self, name: N, value: Option<bool>)
         where N: Into<String>
     {
-        if let Some(value) = *value {
+        if let Some(value) = value {
             let value = if value { 1 } else { 0 };
             self.args.insert(name.into(), value.to_string());
         }
@@ -135,7 +135,7 @@ impl APIArguments {
 
 /// API connection.
 pub trait APIConnection {
-    fn api_url(&self) -> String;
+    fn api_url(&self) -> &String;
 
     fn send_get_request(&mut self,
                         url: &str,
@@ -169,7 +169,7 @@ impl<'a> ResponseVerifyingAPIConnection<'a> {
 }
 
 impl<'a> APIConnection for ResponseVerifyingAPIConnection<'a> {
-    fn api_url(&self) -> String {
+    fn api_url(&self) -> &String {
         self.conn.api_url()
     }
 
@@ -224,6 +224,7 @@ impl HyperAPIConnection {
         let auth = header::Authorization(
             header::Basic {
                 username: self.settings.api_key()
+                    .map(|k| k.clone())
                     .ok_or("missing API key")?,
                 password: None
             }
@@ -246,7 +247,7 @@ impl HyperAPIConnection {
 }
 
 impl APIConnection for HyperAPIConnection {
-    fn api_url(&self) -> String {
+    fn api_url(&self) -> &String {
         self.settings.api_url()
     }
 
@@ -407,7 +408,7 @@ mod tests {
     fn api_arguments_add_opt_string_arg_adds_string_argument_when_some() {
         let mut args = APIArguments::new();
 
-        args.add_opt_string_arg("name", &Some("value".to_string()));
+        args.add_opt_string_arg("name", Some(&"value".to_string()));
 
         assert_eq!(args.get_arg("name"), Some(&"value".to_string()));
     }
@@ -416,7 +417,7 @@ mod tests {
     fn api_arguments_add_opt_string_arg_does_not_add_anything_when_none() {
         let mut args = APIArguments::new();
 
-        args.add_opt_string_arg("name", &None);
+        args.add_opt_string_arg("name", None);
 
         assert!(!args.has_arg("name"));
     }
@@ -443,7 +444,7 @@ mod tests {
     fn api_arguments_add_opt_bool_arg_adds_bool_argument_when_some() {
         let mut args = APIArguments::new();
 
-        args.add_opt_bool_arg("name", &Some(true));
+        args.add_opt_bool_arg("name", Some(true));
 
         assert_eq!(args.get_arg("name"), Some(&"1".to_string()));
     }
@@ -452,7 +453,7 @@ mod tests {
     fn api_arguments_add_opt_bool_arg_does_not_add_anything_when_none() {
         let mut args = APIArguments::new();
 
-        args.add_opt_bool_arg("name", &None);
+        args.add_opt_bool_arg("name", None);
 
         assert!(!args.has_arg("name"));
     }

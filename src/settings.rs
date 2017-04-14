@@ -15,9 +15,9 @@ const DEFAULT_API_URL: &'static str = "https://retdec.com/service/api";
 /// let s = Settings::new()
 ///     .with_api_key("MY-API-KEY");
 ///
-/// assert_eq!(s.api_key(), Some("MY-API-KEY".to_string()));
+/// assert_eq!(s.api_key(), Some(&"MY-API-KEY".to_string()));
 /// // The API URL is provided by default:
-/// assert_eq!(s.api_url(), "https://retdec.com/service/api".to_string());
+/// assert_eq!(s.api_url(), &"https://retdec.com/service/api");
 /// ```
 #[derive(Debug, Clone)]
 pub struct Settings {
@@ -38,8 +38,8 @@ impl Settings {
     ///
     /// Without setting an API key, you will be unable to use any of the
     /// provided services (decompiler, fileinfo).
-    pub fn with_api_key(mut self, new_api_key: &str) -> Self {
-        self.api_key = Some(new_api_key.to_string());
+    pub fn with_api_key<K: Into<String>>(mut self, new_api_key: K) -> Self {
+        self.api_key = Some(new_api_key.into());
         self
     }
 
@@ -47,21 +47,21 @@ impl Settings {
     ///
     /// For public use, the default URL is what you want. This function is only
     /// useful for internal development.
-    pub fn with_api_url(mut self, new_api_url: &str) -> Self {
-        self.api_url = new_api_url.to_string();
+    pub fn with_api_url<U: Into<String>>(mut self, new_api_url: U) -> Self {
+        self.api_url = new_api_url.into();
         self
     }
 
     /// Returns the API key.
     ///
     /// If no API key was set, it returns `None`.
-    pub fn api_key(&self) -> Option<String> {
-        self.api_key.clone()
+    pub fn api_key(&self) -> Option<&String> {
+        self.api_key.as_ref()
     }
 
     /// Returns the API URL.
-    pub fn api_url(&self) -> String {
-        self.api_url.clone()
+    pub fn api_url(&self) -> &String {
+        &self.api_url
     }
 }
 
@@ -74,7 +74,7 @@ mod tests {
         let s = Settings::new();
 
         assert!(s.api_key().is_none());
-        assert_eq!(s.api_url(), DEFAULT_API_URL.to_string());
+        assert_eq!(s.api_url(), &DEFAULT_API_URL);
     }
 
     #[test]
@@ -82,7 +82,7 @@ mod tests {
         let s = Settings::new()
             .with_api_key("KEY");
 
-        assert_eq!(s.api_key(), Some("KEY".to_string()));
+        assert_eq!(s.api_key(), Some(&"KEY".to_string()));
     }
 
     #[test]
@@ -90,7 +90,7 @@ mod tests {
         let s = Settings::new()
             .with_api_url("URL");
 
-        assert_eq!(s.api_url(), "URL".to_string());
+        assert_eq!(s.api_url(), &"URL");
     }
 
     #[test]
@@ -99,7 +99,7 @@ mod tests {
             .with_api_key("KEY")
             .with_api_url("URL");
 
-        assert_eq!(s.api_key(), Some("KEY".to_string()));
-        assert_eq!(s.api_url(), "URL".to_string());
+        assert_eq!(s.api_key(), Some(&"KEY".to_string()));
+        assert_eq!(s.api_url(), &"URL");
     }
 }

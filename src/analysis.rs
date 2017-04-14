@@ -35,16 +35,16 @@ impl AnalysisArguments {
         self
     }
 
-    pub fn output_format(&self) -> &Option<String> {
-        &self.output_format
+    pub fn output_format(&self) -> Option<&String> {
+        self.output_format.as_ref()
     }
 
-    pub fn verbose(&self) -> &Option<bool> {
-        &self.verbose
+    pub fn verbose(&self) -> Option<bool> {
+        self.verbose
     }
 
-    pub fn input_file(&self) -> &Option<PathBuf> {
-        &self.input_file
+    pub fn input_file(&self) -> Option<&PathBuf> {
+        self.input_file.as_ref()
     }
 }
 
@@ -55,9 +55,9 @@ pub struct Analysis {
 }
 
 impl Analysis {
-    pub fn new(id: &str, conn: Box<APIConnection>) -> Self {
+    pub fn new<I: Into<String>>(id: I, conn: Box<APIConnection>) -> Self {
         Analysis {
-            id: id.to_string(),
+            id: id.into(),
             conn: conn,
         }
     }

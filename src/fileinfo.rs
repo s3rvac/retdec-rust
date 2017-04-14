@@ -28,7 +28,7 @@ impl Fileinfo {
         let mut api_args = APIArguments::new();
         api_args.add_opt_string_arg("output_format", args.output_format());
         api_args.add_opt_bool_arg("verbose", args.verbose());
-        match *args.input_file() {
+        match args.input_file() {
             Some(ref input_file) => {
                 api_args.add_file("input", input_file);
             },
