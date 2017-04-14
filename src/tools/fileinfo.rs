@@ -80,7 +80,7 @@ fn run(args: &Vec<String>) -> Result<()> {
         .with_output_format(args.value_of("output_format").unwrap())
         .with_verbose(args.is_present("verbose"))
         .with_input_file(Path::new(&input_file).to_path_buf());
-    let mut analysis = fileinfo.start_analysis(args)?;
+    let mut analysis = fileinfo.start_analysis(&args)?;
     analysis.wait_until_finished()?;
     let output = analysis.get_output()?;
     print_analysis_result(&output)?;

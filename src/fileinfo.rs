@@ -22,7 +22,7 @@ impl Fileinfo {
         }
     }
 
-    pub fn start_analysis(&self, args: AnalysisArguments) -> Result<Analysis> {
+    pub fn start_analysis(&self, args: &AnalysisArguments) -> Result<Analysis> {
         let mut conn = self.conn_factory.new_connection();
         let url = format!("{}/fileinfo/analyses", conn.api_url());
         let mut api_args = APIArguments::new();
