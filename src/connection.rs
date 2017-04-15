@@ -77,7 +77,8 @@ impl APIArguments {
     }
 
     pub fn add_string_arg<N, V>(&mut self, name: N, value: V)
-        where N: Into<String>, V: Into<String>
+        where N: Into<String>,
+              V: Into<String>
     {
         self.args.insert(name.into(), value.into());
     }
@@ -119,7 +120,8 @@ impl APIArguments {
     }
 
     pub fn add_file<N, P>(&mut self, name: N, file: P)
-        where N: Into<String>, P: Into<PathBuf>
+        where N: Into<String>,
+              P: Into<PathBuf>
     {
         self.files.insert(name.into(), file.into());
     }
@@ -146,7 +148,8 @@ impl APIArgumentsBuilder {
     }
 
     pub fn with_string_arg<N, V>(mut self, name: N, value: V) -> Self
-        where N: Into<String>, V: Into<String>
+        where N: Into<String>,
+              V: Into<String>
     {
         self.args.add_string_arg(name, value);
         self
@@ -160,7 +163,8 @@ impl APIArgumentsBuilder {
     }
 
     pub fn with_file<N, P>(mut self, name: N, file: P) -> Self
-        where N: Into<String>, P: Into<PathBuf>
+        where N: Into<String>,
+              P: Into<PathBuf>
     {
         self.args.add_file(name, file);
         self

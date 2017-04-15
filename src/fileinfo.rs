@@ -51,7 +51,8 @@ impl Fileinfo {
         let response = conn.send_post_request(&url, &api_args)
             .chain_err(|| "failed to start an analysis")?;
         let content = response.body_as_json()?;
-        let id = content["id"].as_str()
+        let id = content["id"]
+            .as_str()
             .ok_or(format!("{} returned invalid JSON response", url))?;
         Ok(Analysis::new(id, conn))
     }
@@ -63,19 +64,17 @@ impl Fileinfo {
         match args.input_file() {
             Some(ref input_file) => {
                 api_args.add_file("input", input_file);
-            },
+            }
             None => {
                 bail!("no input file given");
-            },
+            }
         }
         Ok(api_args)
     }
 
     #[cfg(test)]
     fn with_conn_factory(conn_factory: Box<APIConnectionFactory>) -> Self {
-        Fileinfo {
-            conn_factory: conn_factory,
-        }
+        Fileinfo { conn_factory: conn_factory }
     }
 }
 
