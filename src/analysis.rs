@@ -74,7 +74,8 @@ impl Analysis {
             let args = APIArguments::new();
             let response = self.conn.send_get_request(&status_url, &args)?;
             let content = response.body_as_json()?;
-            let finished = content["finished"].as_bool().unwrap();
+            let finished = content["finished"].as_bool()
+                .ok_or(format!("{} returned invalid JSON response", status_url))?;
             if finished {
                 break;
             }
