@@ -166,4 +166,30 @@ mod tests {
         let err = result.err().expect("expected start_analysis() to fail");
         assert_eq!(err.description(), "no input file given");
     }
+
+    #[test]
+    fn fileinfo_start_analysis_returns_error_when_returned_json_does_not_contain_id() {
+        let (conn, fileinfo) = create_fileinfo(Settings::new());
+        let input_file = Path::new(&"file.exe").to_path_buf();
+        let args = AnalysisArguments::new()
+            .with_input_file(input_file.clone());
+        conn.borrow_mut().add_response(
+            "POST",
+            "https://retdec.com/service/api/fileinfo/analyses",
+            Ok(
+                APIResponseBuilder::new()
+                    .with_status_code(200)
+                    .with_body(b"{}")
+                    .build()
+            )
+        );
+
+        let result = fileinfo.start_analysis(&args);
+
+        let err = result.err().expect("expected start_analysis() to fail");
+        assert_eq!(
+            err.description(),
+            "https://retdec.com/service/api/fileinfo/analyses returned invalid JSON response"
+        );
+    }
 }
