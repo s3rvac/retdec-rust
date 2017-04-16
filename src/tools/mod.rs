@@ -16,4 +16,5 @@ macro_rules! generate_main_for_tool {
     }
 }
 
+pub mod decompiler;
 pub mod fileinfo;
