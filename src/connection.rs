@@ -71,10 +71,7 @@ pub struct APIArguments {
 
 impl APIArguments {
     pub fn new() -> Self {
-        APIArguments {
-            args: HashMap::new(),
-            files: HashMap::new(),
-        }
+        APIArguments::default()
     }
 
     pub fn add_string_arg<N, V>(&mut self, name: N, value: V)
