@@ -20,6 +20,7 @@ use multipart::client::SizedRequest;
 use error::Result;
 use error::ResultExt;
 use settings::Settings;
+use utils::current_platform_name;
 
 /// Response from `retdec.com`'s API.
 #[derive(Clone, Debug, Default, PartialEq)]
@@ -254,6 +255,7 @@ impl HyperAPIConnection {
         let mut request = HyperRequest::<Fresh>::new(method, parsed_url)
             .chain_err(|| format!("failed to create a new request to {}", url))?;
         self.add_auth_to_request(&mut request)?;
+        self.add_user_agent_to_request(&mut request);
         Ok(request)
     }
 
@@ -272,6 +274,11 @@ impl HyperAPIConnection {
         );
         request.headers_mut().set(auth);
         Ok(())
+    }
+
+    fn add_user_agent_to_request(&self, request: &mut HyperRequest<Fresh>) {
+        let user_agent = format!("retdec-rust/{}", current_platform_name());
+        request.headers_mut().set(header::UserAgent(user_agent));
     }
 
     fn parse_response(&self, mut response: HyperResponse) -> Result<APIResponse> {
