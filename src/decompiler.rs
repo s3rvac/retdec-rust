@@ -128,7 +128,7 @@ mod tests {
         let decompilation = decompiler.start_decompilation(&args)
             .expect("decompilation should have succeeded");
 
-        assert_eq!(decompilation.id(), &"ID");
+        assert_eq!(*decompilation.id(), "ID");
         assert!(conn.borrow_mut().request_sent(
             "POST",
             "https://retdec.com/service/api/decompiler/decompilations",

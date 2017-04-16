@@ -90,7 +90,7 @@ mod tests {
         let s = Settings::new()
             .with_api_url("URL");
 
-        assert_eq!(s.api_url(), &"URL");
+        assert_eq!(*s.api_url(), "URL");
     }
 
     #[test]
@@ -100,6 +100,6 @@ mod tests {
             .with_api_url("URL");
 
         assert_eq!(s.api_key(), Some(&"KEY".to_string()));
-        assert_eq!(s.api_url(), &"URL");
+        assert_eq!(*s.api_url(), "URL");
     }
 }

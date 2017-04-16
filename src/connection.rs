@@ -738,8 +738,8 @@ mod tests {
 
         let args: Vec<(&String, &String)> = args.args().collect();
         assert_eq!(args.len(), 1);
-        assert_eq!(args[0].0, &"name".to_string());
-        assert_eq!(args[0].1, &"value".to_string());
+        assert_eq!(*args[0].0, "name".to_string());
+        assert_eq!(*args[0].1, "value".to_string());
     }
 
     #[test]
@@ -759,7 +759,7 @@ mod tests {
 
         let files: Vec<(&String, &PathBuf)> = args.files().collect();
         assert_eq!(files.len(), 1);
-        assert_eq!(files[0].0, &"input".to_string());
-        assert_eq!(files[0].1, &Path::new("file.exe").to_path_buf());
+        assert_eq!(*files[0].0, "input".to_string());
+        assert_eq!(*files[0].1, Path::new("file.exe").to_path_buf());
     }
 }
