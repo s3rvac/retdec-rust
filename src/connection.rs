@@ -186,6 +186,11 @@ pub trait APIConnection {
     fn send_post_request(&mut self,
                          url: &str,
                          files: &APIArguments) -> Result<APIResponse>;
+
+    fn send_get_request_without_args(&mut self,
+                                     url: &str) -> Result<APIResponse> {
+        self.send_get_request(url, &APIArguments::new())
+    }
 }
 
 /// Wrapper of API connections that automatically verifies that requests

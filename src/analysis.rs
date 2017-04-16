@@ -3,7 +3,6 @@
 use std::path::PathBuf;
 use std::thread;
 
-use connection::APIArguments;
 use connection::APIConnection;
 use error::Result;
 
@@ -106,8 +105,7 @@ impl Analysis {
             thread::sleep(::std::time::Duration::from_millis(500));
 
             let status_url = format!("{}/fileinfo/analyses/{}/status", self.conn.api_url(), self.id);
-            let args = APIArguments::new();
-            let response = self.conn.send_get_request(&status_url, &args)?;
+            let response = self.conn.send_get_request_without_args(&status_url)?;
             let content = response.body_as_json()?;
             let finished = content["finished"].as_bool()
                 .ok_or(format!("{} returned invalid JSON response", status_url))?;
@@ -124,8 +122,7 @@ impl Analysis {
     /// an analysis (`output_format`).
     pub fn get_output(&mut self) -> Result<String> {
         let output_url = format!("{}/fileinfo/analyses/{}/output", self.conn.api_url(), self.id);
-        let args = APIArguments::new();
-        let response = self.conn.send_get_request(&output_url, &args)?;
+        let response = self.conn.send_get_request_without_args(&output_url)?;
         response.body_as_string()
     }
 }
