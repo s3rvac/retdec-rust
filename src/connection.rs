@@ -641,7 +641,6 @@ impl APIResponseBuilder {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
