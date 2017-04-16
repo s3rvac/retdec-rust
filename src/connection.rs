@@ -46,6 +46,25 @@ impl APIResponse {
         self.status_code >= 200 && self.status_code <= 299
     }
 
+    /// Has the request failed?
+    pub fn failed(&self) -> bool {
+        !self.succeeded()
+    }
+
+    /// Returns the error message (if any).
+    ///
+    /// It is a short reason why the request failed.
+    pub fn error_message(&self) -> Option<String> {
+        self.json_value_as_string("message")
+    }
+
+    /// Returns the error description (if any).
+    ///
+    /// It is a longer reason why the request failed.
+    pub fn error_description(&self) -> Option<String> {
+        self.json_value_as_string("description")
+    }
+
     /// Returns the body of the response as bytes.
     pub fn body(&self) -> &Vec<u8> {
         &self.body
@@ -66,6 +85,26 @@ impl APIResponse {
     pub fn body_as_json(&self) -> Result<JsonValue> {
         json::parse(self.body_as_str()?)
             .chain_err(|| "failed to parse API response body as JSON")
+    }
+
+    /// Returns the value of the given key in the parsed JSON body as a string.
+    pub fn json_value_as_string(&self, key: &str) -> Option<String> {
+        if let Ok(body) = self.body_as_json() {
+            if let Some(value) = body[key].as_str() {
+                return Some(value.to_string());
+            }
+        }
+        None
+    }
+
+    /// Returns the value of the given key in the parsed JSON body as a bool.
+    pub fn json_value_as_bool(&self, key: &str) -> Option<bool> {
+        if let Ok(body) = self.body_as_json() {
+            if let Some(value) = body[key].as_bool() {
+                return Some(value);
+            }
+        }
+        None
     }
 }
 
@@ -641,6 +680,53 @@ mod tests {
     }
 
     #[test]
+    fn api_response_failed_returns_true_when_response_failed() {
+        let r = APIResponseBuilder::new()
+            .with_status_code(404)
+            .build();
+
+        assert!(r.failed());
+    }
+
+    #[test]
+    fn api_response_error_message_returns_error_message_when_present() {
+        let r = APIResponseBuilder::new()
+            .with_body(br#"{
+                "message": "Unauthorized"
+            }"#)
+            .build();
+
+        assert_eq!(r.error_message(), Some("Unauthorized".to_string()));
+    }
+
+    #[test]
+    fn api_response_error_message_returns_none_when_no_error_message_present() {
+        let r = APIResponseBuilder::new()
+            .build();
+
+        assert_eq!(r.error_message(), None);
+    }
+
+    #[test]
+    fn api_response_error_description_returns_error_description_when_present() {
+        let r = APIResponseBuilder::new()
+            .with_body(br#"{
+                "description": "API key authorization failed"
+            }"#)
+            .build();
+
+        assert_eq!(r.error_description(), Some("API key authorization failed".to_string()));
+    }
+
+    #[test]
+    fn api_response_error_description_returns_none_when_no_error_description_present() {
+        let r = APIResponseBuilder::new()
+            .build();
+
+        assert_eq!(r.error_description(), None);
+    }
+
+    #[test]
     fn api_response_body_as_str_returns_correct_representation() {
         let r = APIResponseBuilder::new()
             .with_body(b"Hello!")
@@ -665,6 +751,58 @@ mod tests {
             .build();
 
         assert_eq!(r.body_as_json().unwrap()["count"], 1);
+    }
+
+    #[test]
+    fn api_response_json_value_as_string_returns_value_when_exists() {
+        let r = APIResponseBuilder::new()
+            .with_body(br#"{ "key": "value" }"#)
+            .build();
+
+        assert_eq!(r.json_value_as_string("key"), Some("value".to_string()));
+    }
+
+    #[test]
+    fn api_response_json_value_as_string_returns_none_when_no_such_value() {
+        let r = APIResponseBuilder::new()
+            .build();
+
+        assert_eq!(r.json_value_as_string("key"), None);
+    }
+
+    #[test]
+    fn api_response_json_value_as_string_returns_none_when_value_has_different_type() {
+        let r = APIResponseBuilder::new()
+            .with_body(br#"{ "key": 1 }"#)
+            .build();
+
+        assert_eq!(r.json_value_as_string("key"), None);
+    }
+
+    #[test]
+    fn api_response_json_value_as_bool_returns_value_when_exists() {
+        let r = APIResponseBuilder::new()
+            .with_body(br#"{ "key": true }"#)
+            .build();
+
+        assert_eq!(r.json_value_as_bool("key"), Some(true));
+    }
+
+    #[test]
+    fn api_response_json_value_as_bool_returns_none_when_no_such_value() {
+        let r = APIResponseBuilder::new()
+            .build();
+
+        assert_eq!(r.json_value_as_bool("key"), None);
+    }
+
+    #[test]
+    fn api_response_json_value_as_bool_returns_none_when_value_has_different_type() {
+        let r = APIResponseBuilder::new()
+            .with_body(br#"{ "key": 1 }"#)
+            .build();
+
+        assert_eq!(r.json_value_as_bool("key"), None);
     }
 
     #[test]
