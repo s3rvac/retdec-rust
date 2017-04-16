@@ -31,31 +31,38 @@ pub struct APIResponse {
 }
 
 impl APIResponse {
+    /// Returns the status code (e.g. 200).
     pub fn status_code(&self) -> u16 {
         self.status_code
     }
 
+    /// Returns the status message (e.g. `"Not Found"` for HTTP 404).
     pub fn status_message(&self) -> &String {
         &self.status_message
     }
 
+    /// Has the request succeeded?
     pub fn succeeded(&self) -> bool {
         self.status_code >= 200 && self.status_code <= 299
     }
 
+    /// Returns the body of the response as bytes.
     pub fn body(&self) -> &Vec<u8> {
         &self.body
     }
 
+    /// Returns the body of the response as a non-owned UTF-8 string.
     pub fn body_as_str(&self) -> Result<&str> {
         str::from_utf8(&self.body)
             .chain_err(|| "failed to decode API response body as UTF-8")
     }
 
+    /// Returns the body of the response as an owned UTF-8 string.
     pub fn body_as_string(&self) -> Result<String> {
         Ok(self.body_as_str()?.to_string())
     }
 
+    /// Returns the body as a parsed JSON.
     pub fn body_as_json(&self) -> Result<JsonValue> {
         json::parse(self.body_as_str()?)
             .chain_err(|| "failed to parse API response body as JSON")
@@ -70,10 +77,12 @@ pub struct APIArguments {
 }
 
 impl APIArguments {
+    /// Creates empty arguments.
     pub fn new() -> Self {
         APIArguments::default()
     }
 
+    /// Adds a new string argument (`"name=value"`).
     pub fn add_string_arg<N, V>(&mut self, name: N, value: V)
         where N: Into<String>,
               V: Into<String>
@@ -81,6 +90,7 @@ impl APIArguments {
         self.args.insert(name.into(), value.into());
     }
 
+    /// Adds a new string argument (`"name=value"`) if `value` is not `None`.
     pub fn add_opt_string_arg<N>(&mut self, name: N, value: Option<&String>)
         where N: Into<String>
     {
@@ -89,6 +99,7 @@ impl APIArguments {
         }
     }
 
+    /// Adds a new bool argument (`"name=value"`).
     pub fn add_bool_arg<N>(&mut self, name: N, value: bool)
         where N: Into<String>
     {
@@ -96,6 +107,7 @@ impl APIArguments {
         self.args.insert(name.into(), value.to_string());
     }
 
+    /// Adds a new bool argument (`"name=value"`) if `value` is not `None`.
     pub fn add_opt_bool_arg<N>(&mut self, name: N, value: Option<bool>)
         where N: Into<String>
     {
@@ -104,18 +116,22 @@ impl APIArguments {
         }
     }
 
+    /// Is there an argument with the given name?
     pub fn has_arg(&self, name: &str) -> bool {
         self.args.contains_key(name)
     }
 
+    /// Returns the argument with the given name.
     pub fn get_arg(&self, name: &str) -> Option<&String> {
         self.args.get(name)
     }
 
+    /// Returns an iterator over arguments (`name` => `value`).
     pub fn args(&self) -> ArgIter<String, String> {
         self.args.iter()
     }
 
+    /// Adds the given file under the given name.
     pub fn add_file<N, P>(&mut self, name: N, file: P)
         where N: Into<String>,
               P: Into<PathBuf>
@@ -123,15 +139,18 @@ impl APIArguments {
         self.files.insert(name.into(), file.into());
     }
 
+    /// Returns a file with the given name.
     pub fn get_file(&self, name: &str) -> Option<&PathBuf> {
         self.files.get(name)
     }
 
+    /// Returns an iterator over files (`name` => `path`).
     pub fn files(&self) -> ArgIter<String, PathBuf> {
         self.files.iter()
     }
 }
 
+/// A builder of API arguments.
 #[cfg(test)]
 #[derive(Debug, Default)]
 pub struct APIArgumentsBuilder {
@@ -140,10 +159,12 @@ pub struct APIArgumentsBuilder {
 
 #[cfg(test)]
 impl APIArgumentsBuilder {
+    /// Creates a new builder.
     pub fn new() -> Self {
         APIArgumentsBuilder::default()
     }
 
+    /// Adds a new string argument (`"name=value"`).
     pub fn with_string_arg<N, V>(mut self, name: N, value: V) -> Self
         where N: Into<String>,
               V: Into<String>
@@ -152,6 +173,7 @@ impl APIArgumentsBuilder {
         self
     }
 
+    /// Adds a new bool argument (`"name=value"`).
     pub fn with_bool_arg<N>(mut self, name: N, value: bool) -> Self
         where N: Into<String>
     {
@@ -159,6 +181,7 @@ impl APIArgumentsBuilder {
         self
     }
 
+    /// Adds a new file with the given name.
     pub fn with_file<N, P>(mut self, name: N, file: P) -> Self
         where N: Into<String>,
               P: Into<PathBuf>
@@ -167,6 +190,7 @@ impl APIArgumentsBuilder {
         self
     }
 
+    /// Builds the arguments.
     pub fn build(self) -> APIArguments {
         self.args
     }
@@ -174,16 +198,20 @@ impl APIArgumentsBuilder {
 
 /// API connection.
 pub trait APIConnection {
+    /// Returns the URL to the API.
     fn api_url(&self) -> &String;
 
+    /// Sends an HTTP GET request to the given url with the given arguments.
     fn send_get_request(&mut self,
                         url: &str,
                         args: &APIArguments) -> Result<APIResponse>;
 
+    /// Sends an HTTP POST request to the given url with the given arguments.
     fn send_post_request(&mut self,
                          url: &str,
                          files: &APIArguments) -> Result<APIResponse>;
 
+    /// Sends an HTTP GET request to the given url without any arguments.
     fn send_get_request_without_args(&mut self,
                                      url: &str) -> Result<APIResponse> {
         self.send_get_request(url, &APIArguments::new())
@@ -236,6 +264,7 @@ impl<'a> APIConnection for ResponseVerifyingAPIConnection<'a> {
 
 /// Factory for creating new API connections.
 pub trait APIConnectionFactory {
+    /// Creates a new connection to the API.
     fn new_connection(&self) -> Box<APIConnection>;
 }
 
@@ -341,6 +370,7 @@ pub struct HyperAPIConnectionFactory {
 }
 
 impl HyperAPIConnectionFactory {
+    /// Creates a new factory with the given settings.
     pub fn new(settings: Settings) -> Self {
         HyperAPIConnectionFactory {
             settings: settings,
@@ -358,6 +388,7 @@ impl APIConnectionFactory for HyperAPIConnectionFactory {
     }
 }
 
+/// Information about an API request.
 #[cfg(test)]
 #[derive(Debug, PartialEq)]
 struct APIRequestInfo {
@@ -366,6 +397,7 @@ struct APIRequestInfo {
     args: APIArguments,
 }
 
+/// Information about an API response.
 #[cfg(test)]
 #[derive(Debug)]
 struct APIResponseInfo {
@@ -374,6 +406,7 @@ struct APIResponseInfo {
     response: Result<APIResponse>,
 }
 
+/// A connection mock to be used in tests.
 #[cfg(test)]
 pub struct APIConnectionMock {
     settings: Settings,
@@ -383,6 +416,7 @@ pub struct APIConnectionMock {
 
 #[cfg(test)]
 impl APIConnectionMock {
+    /// Creates a new mock with the given settings.
     pub fn new(settings: Settings) -> Self {
         APIConnectionMock {
             settings: settings,
@@ -391,6 +425,7 @@ impl APIConnectionMock {
         }
     }
 
+    /// Adds a response to be returned for the given request.
     pub fn add_response<U>(&mut self,
                            method: &'static str,
                            url: U,
@@ -406,6 +441,7 @@ impl APIConnectionMock {
         );
     }
 
+    /// Has a request to the given URL and with the given arguments been sent?
     pub fn request_sent<U>(&self,
                         method: &'static str,
                         url: U,
@@ -504,6 +540,7 @@ impl APIConnection for InnerAPIConnectionMock {
     }
 }
 
+/// A connection-factory mock to be used in tests.
 #[cfg(test)]
 pub struct APIConnectionFactoryMock {
     settings: Settings,
@@ -512,6 +549,7 @@ pub struct APIConnectionFactoryMock {
 
 #[cfg(test)]
 impl APIConnectionFactoryMock {
+    /// Creates a new factory.
     pub fn new(settings: Settings, conn: Rc<RefCell<APIConnectionMock>>) -> Self {
         APIConnectionFactoryMock {
             settings: settings,
@@ -532,6 +570,7 @@ impl APIConnectionFactory for APIConnectionFactoryMock {
     }
 }
 
+/// A builder of API responses.
 #[cfg(test)]
 #[derive(Debug, Default)]
 pub struct APIResponseBuilder {
@@ -540,20 +579,24 @@ pub struct APIResponseBuilder {
 
 #[cfg(test)]
 impl APIResponseBuilder {
+    /// Creates a new builder.
     pub fn new() -> Self {
         APIResponseBuilder::default()
     }
 
+    /// Sets the status code of the response.
     pub fn with_status_code(mut self, new_status_code: u16) -> Self {
         self.response.status_code = new_status_code;
         self
     }
 
+    /// Sets the body of the response.
     pub fn with_body(mut self, new_body: &[u8]) -> Self {
         self.response.body = new_body.to_vec();
         self
     }
 
+    /// Builds the response.
     pub fn build(self) -> APIResponse {
         self.response
     }
