@@ -77,8 +77,7 @@ impl Decompilation {
 
             let status_url = format!("{}/decompiler/decompilations/{}/status", self.conn.api_url(), self.id);
             let response = self.conn.send_get_request_without_args(&status_url)?;
-            let content = response.body_as_json()?;
-            let finished = content["finished"].as_bool()
+            let finished = response.json_value_as_bool("finished")
                 .ok_or(format!("{} returned invalid JSON response", status_url))?;
             if finished {
                 break;

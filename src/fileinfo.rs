@@ -50,9 +50,7 @@ impl Fileinfo {
         let api_args = self.create_api_args(args)?;
         let response = conn.send_post_request(&url, &api_args)
             .chain_err(|| "failed to start an analysis")?;
-        let content = response.body_as_json()?;
-        let id = content["id"]
-            .as_str()
+        let id = response.json_value_as_string("id")
             .ok_or(format!("{} returned invalid JSON response", url))?;
         Ok(Analysis::new(id, conn))
     }
