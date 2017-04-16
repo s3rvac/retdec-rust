@@ -565,6 +565,7 @@ mod tests {
     use super::*;
 
     use std::path::Path;
+
     #[test]
     fn api_response_getters_return_correct_values() {
         let r = APIResponse {
