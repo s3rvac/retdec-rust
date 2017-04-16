@@ -102,8 +102,7 @@ impl APIArguments {
         where N: Into<String>
     {
         if let Some(value) = value {
-            let value = if value { 1 } else { 0 };
-            self.args.insert(name.into(), value.to_string());
+            self.add_bool_arg(name, value);
         }
     }
 
