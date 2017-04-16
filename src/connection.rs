@@ -263,23 +263,28 @@ pub trait APIConnection {
 /// It wraps an existing API connection. Then, when a response from a GET/POST
 /// request is received, it verifies that the request succeeded. If the request
 /// failed, it automatically returns an error.
-struct ResponseVerifyingAPIConnection<'a> {
-    conn: &'a mut APIConnection,
+struct ResponseVerifyingAPIConnection<> {
+    conn: Box<APIConnection>,
 }
 
-impl<'a> ResponseVerifyingAPIConnection<'a> {
+impl ResponseVerifyingAPIConnection {
+    /// Creates a response-verifying connection wrapping the given connection.
+    pub fn new(conn: Box<APIConnection>) -> Self {
+        ResponseVerifyingAPIConnection { conn: conn }
+    }
+
     fn ensure_request_succeeded(&self, response: &APIResponse) -> Result<()> {
         if response.succeeded() {
             return Ok(());
         }
 
-        bail!("request failed HTTP {}: {}",
+        bail!("request failed with HTTP {}: {}",
               response.status_code(),
               response.status_message())
     }
 }
 
-impl<'a> APIConnection for ResponseVerifyingAPIConnection<'a> {
+impl APIConnection for ResponseVerifyingAPIConnection {
     fn api_url(&self) -> &String {
         self.conn.api_url()
     }
@@ -629,6 +634,14 @@ impl APIResponseBuilder {
         self
     }
 
+    /// Sets the status message of the response.
+    pub fn with_status_message<M>(mut self, new_status_message: M) -> Self
+        where M: Into<String>
+    {
+        self.response.status_message = new_status_message.into();
+        self
+    }
+
     /// Sets the body of the response.
     pub fn with_body(mut self, new_body: &[u8]) -> Self {
         self.response.body = new_body.to_vec();
@@ -898,5 +911,97 @@ mod tests {
         assert_eq!(files.len(), 1);
         assert_eq!(*files[0].0, "input".to_string());
         assert_eq!(*files[0].1, Path::new("file.exe").to_path_buf());
+    }
+
+    #[test]
+    fn response_verifying_connection_returns_get_request_when_succeeded() {
+        let mut conn = Box::new(APIConnectionMock::new(Settings::new()));
+        conn.add_response(
+            "GET",
+            "https://retdec.com/service/api/test/echo",
+            Ok(
+                APIResponseBuilder::new()
+                    .with_status_code(200)
+                    .build()
+            )
+        );
+        let mut wrapper = ResponseVerifyingAPIConnection::new(conn);
+
+        let response = wrapper.send_get_request_without_args(
+            "https://retdec.com/service/api/test/echo"
+        );
+
+        assert!(response.is_ok());
+    }
+
+    #[test]
+    fn response_verifying_connection_returns_post_request_when_succeeded() {
+        let mut conn = Box::new(APIConnectionMock::new(Settings::new()));
+        conn.add_response(
+            "POST",
+            "https://retdec.com/service/api/fileinfo/analyses",
+            Ok(
+                APIResponseBuilder::new()
+                    .with_status_code(200)
+                    .build()
+            )
+        );
+        let mut wrapper = ResponseVerifyingAPIConnection::new(conn);
+
+        let response = wrapper.send_post_request(
+            "https://retdec.com/service/api/fileinfo/analyses",
+            &APIArguments::new()
+        );
+
+        assert!(response.is_ok());
+    }
+
+    #[test]
+    fn response_verifying_connection_returns_error_when_get_request_fails() {
+        let mut conn = Box::new(APIConnectionMock::new(Settings::new()));
+        conn.add_response(
+            "GET",
+            "https://retdec.com/service/api/XYZ",
+            Ok(
+                APIResponseBuilder::new()
+                    .with_status_code(404)
+                    .with_status_message("Not Found")
+                    .build()
+            )
+        );
+        let mut wrapper = ResponseVerifyingAPIConnection::new(conn);
+
+        let response = wrapper.send_get_request_without_args(
+            "https://retdec.com/service/api/XYZ"
+        );
+
+        let err = response.err()
+            .expect("expected send_get_request_without_args() to fail");
+        assert_eq!(
+            err.description(),
+            "request failed with HTTP 404: Not Found"
+        );
+    }
+
+    #[test]
+    fn response_verifying_connection_returns_error_when_post_request_fails() {
+        let mut conn = Box::new(APIConnectionMock::new(Settings::new()));
+        conn.add_response(
+            "POST",
+            "https://retdec.com/service/api/XYZ",
+            Ok(
+                APIResponseBuilder::new()
+                    .with_status_code(404)
+                    .build()
+            )
+        );
+        let mut wrapper = ResponseVerifyingAPIConnection::new(conn);
+
+        let response = wrapper.send_post_request(
+            "https://retdec.com/service/api/XYZ",
+            &APIArguments::new()
+        );
+
+        assert!(response.is_err());
     }
 }
