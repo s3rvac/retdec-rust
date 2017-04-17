@@ -1,11 +1,14 @@
 //! Settings for the provided services.
 
+use std::env;
+
 const DEFAULT_API_URL: &'static str = "https://retdec.com/service/api";
 
 /// Settings for the provided services.
 ///
 /// To use any of the services (decompiler, fileinfo), you have to provide your
-/// own API key by calling `with_api_key()`.
+/// own API key either by calling `with_api_key()` or by setting the
+/// `RETDEC_API_KEY` environment variable.
 ///
 /// # Examples
 ///
@@ -27,10 +30,21 @@ pub struct Settings {
 
 impl Settings {
     /// Creates new settings.
+    ///
+    /// The default values depend on whether the following two environment
+    /// variables are set:
+    ///
+    /// * `RETDEC_API_KEY`: If set, its value will be used as the default API
+    ///   key. Otherwise, no API key will be set and you have to call
+    ///   `with_api_key()` to set it.
+    /// * `RETDEC_API_URL`: If set, its value will be used as the default.
+    ///   Otherwise, the default API URL is used. For public use, the default
+    ///   URL is what you want. Setting a custom API URL is only useful for
+    ///   internal development.
     pub fn new() -> Self {
         Settings {
-            api_key: None,
-            api_url: DEFAULT_API_URL.to_string(),
+            api_key: Self::default_api_key(),
+            api_url: Self::default_api_url(),
         }
     }
 
@@ -63,6 +77,20 @@ impl Settings {
     pub fn api_url(&self) -> &String {
         &self.api_url
     }
+
+    fn default_api_key() -> Option<String> {
+        match env::var("RETDEC_API_KEY") {
+            Ok(api_key) => Some(api_key),
+            Err(_) => None,
+        }
+    }
+
+    fn default_api_url() -> String {
+        match env::var("RETDEC_API_URL") {
+            Ok(api_url) => api_url,
+            Err(_) => DEFAULT_API_URL.to_string(),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -73,8 +101,15 @@ mod tests {
     fn settings_new_returns_settings_with_default_values() {
         let s = Settings::new();
 
-        assert!(s.api_key().is_none());
-        assert_eq!(s.api_url(), &DEFAULT_API_URL);
+        // The default values depend on the presence of environment variables.
+        match env::var("RETDEC_API_KEY") {
+            Ok(api_key) => assert_eq!(s.api_key(), Some(&api_key)),
+            Err(_) => assert!(s.api_key().is_none()),
+        }
+        match env::var("RETDEC_API_URL") {
+            Ok(api_url) => assert_eq!(s.api_url(), &api_url),
+            Err(_) => assert_eq!(s.api_url(), &DEFAULT_API_URL),
+        }
     }
 
     #[test]
