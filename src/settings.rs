@@ -62,7 +62,7 @@ impl Settings {
     /// For public use, the default URL is what you want. This function is only
     /// useful for internal development.
     pub fn with_api_url<U: Into<String>>(mut self, new_api_url: U) -> Self {
-        self.api_url = new_api_url.into();
+        self.api_url = Self::normalize_api_url(new_api_url.into());
         self
     }
 
@@ -87,9 +87,19 @@ impl Settings {
 
     fn default_api_url() -> String {
         match env::var("RETDEC_API_URL") {
-            Ok(api_url) => api_url,
+            Ok(api_url) => Self::normalize_api_url(api_url),
             Err(_) => DEFAULT_API_URL.to_string(),
         }
+    }
+
+    fn normalize_api_url(mut api_url: String) -> String {
+        // We need to ensure that the URL does not end with a slash because the
+        // retdec.com'a API does not use trailing slashes. This simplifies the
+        // use of Settings::api_url() in the library.
+        if api_url.ends_with('/') {
+            api_url.pop();
+        }
+        api_url
     }
 }
 
@@ -107,7 +117,12 @@ mod tests {
             Err(_) => assert!(s.api_key().is_none()),
         }
         match env::var("RETDEC_API_URL") {
-            Ok(api_url) => assert_eq!(s.api_url(), &api_url),
+            Ok(mut api_url) => {
+                if api_url.ends_with('/') {
+                    api_url.pop();
+                }
+                assert_eq!(s.api_url(), &api_url)
+            }
             Err(_) => assert_eq!(s.api_url(), &DEFAULT_API_URL),
         }
     }
@@ -126,6 +141,14 @@ mod tests {
             .with_api_url("URL");
 
         assert_eq!(*s.api_url(), "URL");
+    }
+
+    #[test]
+    fn settings_trailing_slash_is_removed_from_api_url() {
+        let s = Settings::new()
+            .with_api_url(format!("{}/", DEFAULT_API_URL));
+
+        assert_eq!(*s.api_url(), DEFAULT_API_URL);
     }
 
     #[test]
