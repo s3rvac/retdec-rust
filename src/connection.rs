@@ -312,6 +312,31 @@ pub trait APIConnectionFactory {
     fn new_connection(&self) -> Box<APIConnection>;
 }
 
+/// Wrapper of API-connection factories that return connections that
+/// automatically verify that requests succeed.
+pub struct ResponseVerifyingAPIConnectionFactory {
+    conn_factory: Box<APIConnectionFactory>,
+}
+
+impl ResponseVerifyingAPIConnectionFactory {
+    /// Creates a new factory wrapping the given factory.
+    pub fn new(conn_factory: Box<APIConnectionFactory>) -> Self {
+        ResponseVerifyingAPIConnectionFactory {
+            conn_factory: conn_factory
+        }
+    }
+}
+
+impl APIConnectionFactory for ResponseVerifyingAPIConnectionFactory {
+    fn new_connection(&self) -> Box<APIConnection> {
+        Box::new(
+            ResponseVerifyingAPIConnection::new(
+                self.conn_factory.new_connection()
+            )
+        )
+    }
+}
+
 /// Connection to `retdec.com`'s API via [hyper](https://hyper.rs/).
 pub struct HyperAPIConnection {
     settings: Settings,
