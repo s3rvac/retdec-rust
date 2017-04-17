@@ -4,6 +4,7 @@
 use connection::APIArguments;
 use connection::APIConnectionFactory;
 use connection::HyperAPIConnectionFactory;
+use connection::ResponseVerifyingAPIConnectionFactory;
 use decompilation::Decompilation;
 use decompilation::DecompilationArguments;
 use error::Result;
@@ -39,7 +40,11 @@ impl Decompiler {
     /// Creates a new instance of the file-decompiling service.
     pub fn new(settings: Settings) -> Self {
         Decompiler {
-            conn_factory: Box::new(HyperAPIConnectionFactory::new(settings)),
+            conn_factory: Box::new(
+                ResponseVerifyingAPIConnectionFactory::new(
+                    Box::new(HyperAPIConnectionFactory::new(settings))
+                )
+            ),
         }
     }
 

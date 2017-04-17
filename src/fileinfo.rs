@@ -6,6 +6,7 @@ use analysis::AnalysisArguments;
 use connection::APIArguments;
 use connection::APIConnectionFactory;
 use connection::HyperAPIConnectionFactory;
+use connection::ResponseVerifyingAPIConnectionFactory;
 use error::Result;
 use error::ResultExt;
 use settings::Settings;
@@ -39,7 +40,11 @@ impl Fileinfo {
     /// Creates a new instance of the file-analyzing service.
     pub fn new(settings: Settings) -> Self {
         Fileinfo {
-            conn_factory: Box::new(HyperAPIConnectionFactory::new(settings)),
+            conn_factory: Box::new(
+                ResponseVerifyingAPIConnectionFactory::new(
+                    Box::new(HyperAPIConnectionFactory::new(settings))
+                )
+            ),
         }
     }
 
