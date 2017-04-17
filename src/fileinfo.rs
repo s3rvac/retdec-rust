@@ -90,10 +90,10 @@ mod tests {
     use std::rc::Rc;
 
     use analysis::AnalysisArguments;
-    use connection::APIArgumentsBuilder;
-    use connection::APIConnectionFactoryMock;
-    use connection::APIConnectionMock;
-    use connection::APIResponseBuilder;
+    use connection::tests::APIArgumentsBuilder;
+    use connection::tests::APIConnectionFactoryMock;
+    use connection::tests::APIConnectionMock;
+    use connection::tests::APIResponseBuilder;
 
     fn create_fileinfo(settings: Settings) -> (Rc<RefCell<APIConnectionMock>>, Fileinfo) {
         let conn = Rc::new(

@@ -88,11 +88,11 @@ mod tests {
     use std::path::Path;
     use std::rc::Rc;
 
+    use connection::tests::APIArgumentsBuilder;
+    use connection::tests::APIConnectionFactoryMock;
+    use connection::tests::APIConnectionMock;
+    use connection::tests::APIResponseBuilder;
     use decompilation::DecompilationArguments;
-    use connection::APIArgumentsBuilder;
-    use connection::APIConnectionFactoryMock;
-    use connection::APIConnectionMock;
-    use connection::APIResponseBuilder;
 
     fn create_decompiler(settings: Settings) -> (Rc<RefCell<APIConnectionMock>>, Decompiler) {
         let conn = Rc::new(

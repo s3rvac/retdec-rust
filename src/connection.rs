@@ -211,52 +211,6 @@ impl APIArguments {
     }
 }
 
-/// A builder of API arguments.
-#[cfg(test)]
-#[derive(Debug, Default)]
-pub struct APIArgumentsBuilder {
-    args: APIArguments,
-}
-
-#[cfg(test)]
-impl APIArgumentsBuilder {
-    /// Creates a new builder.
-    pub fn new() -> Self {
-        APIArgumentsBuilder::default()
-    }
-
-    /// Adds a new string argument (`"name=value"`).
-    pub fn with_string_arg<N, V>(mut self, name: N, value: V) -> Self
-        where N: Into<String>,
-              V: Into<String>
-    {
-        self.args.add_string_arg(name, value);
-        self
-    }
-
-    /// Adds a new bool argument (`"name=value"`).
-    pub fn with_bool_arg<N>(mut self, name: N, value: bool) -> Self
-        where N: Into<String>
-    {
-        self.args.add_bool_arg(name, value);
-        self
-    }
-
-    /// Adds a new file with the given name.
-    pub fn with_file<N, P>(mut self, name: N, file: P) -> Self
-        where N: Into<String>,
-              P: Into<PathBuf>
-    {
-        self.args.add_file(name, file);
-        self
-    }
-
-    /// Builds the arguments.
-    pub fn build(self) -> APIArguments {
-        self.args
-    }
-}
-
 /// API connection.
 pub trait APIConnection {
     /// Returns the URL to the API.
@@ -477,233 +431,262 @@ impl APIConnectionFactory for HyperAPIConnectionFactory {
     }
 }
 
-/// Information about an API request.
 #[cfg(test)]
-#[derive(Debug, PartialEq)]
-struct APIRequestInfo {
-    method: &'static str,
-    url: String,
-    args: APIArguments,
-}
-
-/// Information about an API response.
-#[cfg(test)]
-#[derive(Debug)]
-struct APIResponseInfo {
-    method: &'static str,
-    url: String,
-    response: Result<APIResponse>,
-}
-
-/// A connection mock to be used in tests.
-#[cfg(test)]
-pub struct APIConnectionMock {
-    settings: Settings,
-    requests: Vec<APIRequestInfo>,
-    responses: Vec<APIResponseInfo>,
-}
-
-#[cfg(test)]
-impl APIConnectionMock {
-    /// Creates a new mock with the given settings.
-    pub fn new(settings: Settings) -> Self {
-        APIConnectionMock {
-            settings: settings,
-            requests: Vec::new(),
-            responses: Vec::new(),
-        }
-    }
-
-    /// Adds a response to be returned for the given request.
-    pub fn add_response<U>(&mut self,
-                           method: &'static str,
-                           url: U,
-                           response: Result<APIResponse>)
-        where U: Into<String>
-    {
-        self.responses.push(
-            APIResponseInfo {
-                method: method,
-                url: url.into(),
-                response: response,
-            }
-        );
-    }
-
-    /// Has a request to the given URL and with the given arguments been sent?
-    pub fn request_sent<U>(&self,
-                        method: &'static str,
-                        url: U,
-                        args: APIArguments) -> bool
-        where U: Into<String>
-    {
-        self.requests.contains(
-            &APIRequestInfo {
-                method: method,
-                url: url.into(),
-                args: args
-            }
-        )
-    }
-
-    fn add_request<U>(&mut self,
-                   method: &'static str,
-                   url: U,
-                   args: &APIArguments)
-        where U: Into<String>
-    {
-        self.requests.push(
-            APIRequestInfo {
-                method: method,
-                url: url.into(),
-                args: (*args).clone(),
-            }
-        );
-    }
-
-    fn find_response(&mut self,
-                     method: &'static str,
-                     url: &str) -> Result<APIResponse> {
-        let mut found_index = None;
-        for (i, ref r) in self.responses.iter().enumerate() {
-            if r.method == method && r.url == url {
-                found_index = Some(i);
-                break;
-            }
-        }
-        if let Some(i) = found_index {
-            return self.responses.remove(i).response;
-        }
-        panic!("no response set for {} request to {}", method, url);
-    }
-}
-
-#[cfg(test)]
-impl APIConnection for APIConnectionMock {
-    fn api_url(&self) -> &String {
-        self.settings.api_url()
-    }
-
-    fn send_get_request(&mut self,
-                        url: &str,
-                        args: &APIArguments) -> Result<APIResponse> {
-        self.add_request("GET", url, args);
-        self.find_response("GET", url)
-    }
-
-    fn send_post_request(&mut self,
-                         url: &str,
-                         args: &APIArguments) -> Result<APIResponse> {
-        self.add_request("POST", url, args);
-        self.find_response("POST", url)
-    }
-}
-
-#[cfg(test)]
-use std::rc::Rc;
-#[cfg(test)]
-use std::cell::RefCell;
-
-#[cfg(test)]
-struct InnerAPIConnectionMock {
-    settings: Settings,
-    conn: Rc<RefCell<APIConnectionMock>>,
-}
-
-#[cfg(test)]
-impl APIConnection for InnerAPIConnectionMock {
-    fn api_url(&self) -> &String {
-        self.settings.api_url()
-    }
-
-    fn send_get_request(&mut self,
-                        url: &str,
-                        args: &APIArguments) -> Result<APIResponse> {
-        self.conn.borrow_mut().send_get_request(url, args)
-    }
-
-    fn send_post_request(&mut self,
-                         url: &str,
-                         args: &APIArguments) -> Result<APIResponse> {
-        self.conn.borrow_mut().send_post_request(url, args)
-    }
-}
-
-/// A connection-factory mock to be used in tests.
-#[cfg(test)]
-pub struct APIConnectionFactoryMock {
-    settings: Settings,
-    conn: Rc<RefCell<APIConnectionMock>>,
-}
-
-#[cfg(test)]
-impl APIConnectionFactoryMock {
-    /// Creates a new factory.
-    pub fn new(settings: Settings, conn: Rc<RefCell<APIConnectionMock>>) -> Self {
-        APIConnectionFactoryMock {
-            settings: settings,
-            conn: conn,
-        }
-    }
-}
-
-#[cfg(test)]
-impl APIConnectionFactory for APIConnectionFactoryMock {
-    fn new_connection(&self) -> Box<APIConnection> {
-        Box::new(
-            InnerAPIConnectionMock {
-                settings: self.settings.clone(),
-                conn: self.conn.clone(),
-            }
-        )
-    }
-}
-
-/// A builder of API responses.
-#[cfg(test)]
-#[derive(Debug, Default)]
-pub struct APIResponseBuilder {
-    response: APIResponse,
-}
-
-#[cfg(test)]
-impl APIResponseBuilder {
-    /// Creates a new builder.
-    pub fn new() -> Self {
-        APIResponseBuilder::default()
-    }
-
-    /// Sets the status code of the response.
-    pub fn with_status_code(mut self, new_status_code: u16) -> Self {
-        self.response.status_code = new_status_code;
-        self
-    }
-
-    /// Sets the status message of the response.
-    pub fn with_status_message<M>(mut self, new_status_message: M) -> Self
-        where M: Into<String>
-    {
-        self.response.status_message = new_status_message.into();
-        self
-    }
-
-    /// Sets the body of the response.
-    pub fn with_body(mut self, new_body: &[u8]) -> Self {
-        self.response.body = new_body.to_vec();
-        self
-    }
-
-    /// Builds the response.
-    pub fn build(self) -> APIResponse {
-        self.response
-    }
-}
-
-#[cfg(test)]
-mod tests {
+pub mod tests {
     use super::*;
 
+    use std::cell::RefCell;
     use std::path::Path;
+    use std::rc::Rc;
+
+    /// A builder of API arguments.
+    #[derive(Debug, Default)]
+    pub struct APIArgumentsBuilder {
+        args: APIArguments,
+    }
+
+    impl APIArgumentsBuilder {
+        /// Creates a new builder.
+        pub fn new() -> Self {
+            APIArgumentsBuilder::default()
+        }
+
+        /// Adds a new string argument (`"name=value"`).
+        pub fn with_string_arg<N, V>(mut self, name: N, value: V) -> Self
+            where N: Into<String>,
+                V: Into<String>
+        {
+            self.args.add_string_arg(name, value);
+            self
+        }
+
+        /// Adds a new bool argument (`"name=value"`).
+        pub fn with_bool_arg<N>(mut self, name: N, value: bool) -> Self
+            where N: Into<String>
+        {
+            self.args.add_bool_arg(name, value);
+            self
+        }
+
+        /// Adds a new file with the given name.
+        pub fn with_file<N, P>(mut self, name: N, file: P) -> Self
+            where N: Into<String>,
+                P: Into<PathBuf>
+        {
+            self.args.add_file(name, file);
+            self
+        }
+
+        /// Builds the arguments.
+        pub fn build(self) -> APIArguments {
+            self.args
+        }
+    }
+
+    /// Information about an API request.
+    #[derive(Debug, PartialEq)]
+    struct APIRequestInfo {
+        method: &'static str,
+        url: String,
+        args: APIArguments,
+    }
+
+    /// Information about an API response.
+    #[derive(Debug)]
+    struct APIResponseInfo {
+        method: &'static str,
+        url: String,
+        response: Result<APIResponse>,
+    }
+
+    /// A connection mock to be used in tests.
+    pub struct APIConnectionMock {
+        settings: Settings,
+        requests: Vec<APIRequestInfo>,
+        responses: Vec<APIResponseInfo>,
+    }
+
+    impl APIConnectionMock {
+        /// Creates a new mock with the given settings.
+        pub fn new(settings: Settings) -> Self {
+            APIConnectionMock {
+                settings: settings,
+                requests: Vec::new(),
+                responses: Vec::new(),
+            }
+        }
+
+        /// Adds a response to be returned for the given request.
+        pub fn add_response<U>(&mut self,
+                            method: &'static str,
+                            url: U,
+                            response: Result<APIResponse>)
+            where U: Into<String>
+        {
+            self.responses.push(
+                APIResponseInfo {
+                    method: method,
+                    url: url.into(),
+                    response: response,
+                }
+            );
+        }
+
+        /// Has a request to the given URL and with the given arguments been sent?
+        pub fn request_sent<U>(&self,
+                            method: &'static str,
+                            url: U,
+                            args: APIArguments) -> bool
+            where U: Into<String>
+        {
+            self.requests.contains(
+                &APIRequestInfo {
+                    method: method,
+                    url: url.into(),
+                    args: args
+                }
+            )
+        }
+
+        fn add_request<U>(&mut self,
+                    method: &'static str,
+                    url: U,
+                    args: &APIArguments)
+            where U: Into<String>
+        {
+            self.requests.push(
+                APIRequestInfo {
+                    method: method,
+                    url: url.into(),
+                    args: (*args).clone(),
+                }
+            );
+        }
+
+        fn find_response(&mut self,
+                        method: &'static str,
+                        url: &str) -> Result<APIResponse> {
+            let mut found_index = None;
+            for (i, ref r) in self.responses.iter().enumerate() {
+                if r.method == method && r.url == url {
+                    found_index = Some(i);
+                    break;
+                }
+            }
+            if let Some(i) = found_index {
+                return self.responses.remove(i).response;
+            }
+            panic!("no response set for {} request to {}", method, url);
+        }
+    }
+
+    impl APIConnection for APIConnectionMock {
+        fn api_url(&self) -> &String {
+            self.settings.api_url()
+        }
+
+        fn send_get_request(&mut self,
+                            url: &str,
+                            args: &APIArguments) -> Result<APIResponse> {
+            self.add_request("GET", url, args);
+            self.find_response("GET", url)
+        }
+
+        fn send_post_request(&mut self,
+                            url: &str,
+                            args: &APIArguments) -> Result<APIResponse> {
+            self.add_request("POST", url, args);
+            self.find_response("POST", url)
+        }
+    }
+
+    struct InnerAPIConnectionMock {
+        settings: Settings,
+        conn: Rc<RefCell<APIConnectionMock>>,
+    }
+
+    impl APIConnection for InnerAPIConnectionMock {
+        fn api_url(&self) -> &String {
+            self.settings.api_url()
+        }
+
+        fn send_get_request(&mut self,
+                            url: &str,
+                            args: &APIArguments) -> Result<APIResponse> {
+            self.conn.borrow_mut().send_get_request(url, args)
+        }
+
+        fn send_post_request(&mut self,
+                            url: &str,
+                            args: &APIArguments) -> Result<APIResponse> {
+            self.conn.borrow_mut().send_post_request(url, args)
+        }
+    }
+
+    /// A connection-factory mock to be used in tests.
+    pub struct APIConnectionFactoryMock {
+        settings: Settings,
+        conn: Rc<RefCell<APIConnectionMock>>,
+    }
+
+    impl APIConnectionFactoryMock {
+        /// Creates a new factory.
+        pub fn new(settings: Settings, conn: Rc<RefCell<APIConnectionMock>>) -> Self {
+            APIConnectionFactoryMock {
+                settings: settings,
+                conn: conn,
+            }
+        }
+    }
+
+    impl APIConnectionFactory for APIConnectionFactoryMock {
+        fn new_connection(&self) -> Box<APIConnection> {
+            Box::new(
+                InnerAPIConnectionMock {
+                    settings: self.settings.clone(),
+                    conn: self.conn.clone(),
+                }
+            )
+        }
+    }
+
+    /// A builder of API responses.
+    #[derive(Debug, Default)]
+    pub struct APIResponseBuilder {
+        response: APIResponse,
+    }
+
+    impl APIResponseBuilder {
+        /// Creates a new builder.
+        pub fn new() -> Self {
+            APIResponseBuilder::default()
+        }
+
+        /// Sets the status code of the response.
+        pub fn with_status_code(mut self, new_status_code: u16) -> Self {
+            self.response.status_code = new_status_code;
+            self
+        }
+
+        /// Sets the status message of the response.
+        pub fn with_status_message<M>(mut self, new_status_message: M) -> Self
+            where M: Into<String>
+        {
+            self.response.status_message = new_status_message.into();
+            self
+        }
+
+        /// Sets the body of the response.
+        pub fn with_body(mut self, new_body: &[u8]) -> Self {
+            self.response.body = new_body.to_vec();
+            self
+        }
+
+        /// Builds the response.
+        pub fn build(self) -> APIResponse {
+            self.response
+        }
+    }
 
     #[test]
     fn api_response_getters_return_correct_values() {
