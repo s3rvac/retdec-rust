@@ -28,9 +28,9 @@
 #![deny(unstable_features)]
 #![warn(trivial_casts)]
 #![warn(trivial_numeric_casts)]
-#![warn(unused_qualifications)]
 #![warn(unused_extern_crates)]
 #![warn(unused_import_braces)]
+#![warn(unused_qualifications)]
 
 extern crate clap;
 extern crate hyper;
