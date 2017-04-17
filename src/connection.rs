@@ -939,7 +939,7 @@ mod tests {
     }
 
     #[test]
-    fn response_verifying_connection_returns_get_request_when_succeeded() {
+    fn response_verifying_api_connection_returns_get_request_when_succeeded() {
         let mut conn = Box::new(APIConnectionMock::new(Settings::new()));
         conn.add_response(
             "GET",
@@ -960,7 +960,7 @@ mod tests {
     }
 
     #[test]
-    fn response_verifying_connection_returns_post_request_when_succeeded() {
+    fn response_verifying_api_connection_returns_post_request_when_succeeded() {
         let mut conn = Box::new(APIConnectionMock::new(Settings::new()));
         conn.add_response(
             "POST",
@@ -982,7 +982,7 @@ mod tests {
     }
 
     #[test]
-    fn response_verifying_connection_returns_error_when_get_request_fails() {
+    fn response_verifying_api_connection_returns_error_when_get_request_fails() {
         let mut conn = Box::new(APIConnectionMock::new(Settings::new()));
         conn.add_response(
             "GET",
@@ -1009,7 +1009,7 @@ mod tests {
     }
 
     #[test]
-    fn response_verifying_connection_returns_error_when_post_request_fails() {
+    fn response_verifying_api_connection_returns_error_when_post_request_fails() {
         let mut conn = Box::new(APIConnectionMock::new(Settings::new()));
         conn.add_response(
             "POST",
