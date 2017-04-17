@@ -94,7 +94,7 @@ mod tests {
     }
 
     #[test]
-    fn settings_can_set_all_attributes() {
+    fn settings_can_set_all_attributes_at_once() {
         let s = Settings::new()
             .with_api_key("KEY")
             .with_api_url("URL");
