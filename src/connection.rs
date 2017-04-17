@@ -65,6 +65,28 @@ impl APIResponse {
         self.json_value_as_string("description")
     }
 
+    /// Returns the most human-readable representation of the error.
+    ///
+    /// Tries to create the most readable representation by utilizing
+    /// `error_description()`, `error_message()`, `status_message()`, and
+    /// `status_code()`.
+    pub fn error_reason(&self) -> String {
+        let mut reason = if let Some(description) = self.error_description() {
+            description
+        } else if let Some(message) = self.error_message() {
+            message
+        } else if !self.status_message.is_empty() {
+            self.status_message.clone()
+        } else {
+            "Unknown error".to_string()
+        };
+
+        if self.status_code != 0 {
+            reason.push_str(&format!(" (HTTP {})", self.status_code));
+        }
+        reason
+    }
+
     /// Returns the body of the response as bytes.
     pub fn body(&self) -> &Vec<u8> {
         &self.body
@@ -761,6 +783,55 @@ mod tests {
             .build();
 
         assert_eq!(r.error_description(), None);
+    }
+
+    #[test]
+    fn api_response_error_reason_returns_correct_reason_where_there_is_error_description() {
+        let r = APIResponseBuilder::new()
+            .with_body(br#"{
+                "description": "API key authorization failed"
+            }"#)
+            .build();
+
+        assert_eq!(r.error_reason(), "API key authorization failed");
+    }
+
+    #[test]
+    fn api_response_error_reason_returns_correct_reason_where_there_is_error_message() {
+        let r = APIResponseBuilder::new()
+            .with_body(br#"{
+                "message": "Unauthorized"
+            }"#)
+            .build();
+
+        assert_eq!(r.error_reason(), "Unauthorized");
+    }
+
+    #[test]
+    fn api_response_error_reason_returns_correct_reason_where_there_is_status_message() {
+        let r = APIResponseBuilder::new()
+            .with_status_message("Not Found")
+            .build();
+
+        assert_eq!(r.error_reason(), "Not Found");
+    }
+
+    #[test]
+    fn api_response_error_reason_includes_http_status_code_when_present() {
+        let r = APIResponseBuilder::new()
+            .with_status_code(404)
+            .with_status_message("Not Found")
+            .build();
+
+        assert_eq!(r.error_reason(), "Not Found (HTTP 404)");
+    }
+
+    #[test]
+    fn api_response_error_reason_returns_unknown_reason_where_there_is_no_information() {
+        let r = APIResponseBuilder::new()
+            .build();
+
+        assert_eq!(r.error_reason(), "Unknown error");
     }
 
     #[test]
