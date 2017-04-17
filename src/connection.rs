@@ -300,9 +300,7 @@ impl ResponseVerifyingAPIConnection {
             return Ok(());
         }
 
-        bail!("request failed with HTTP {}: {}",
-              response.status_code(),
-              response.status_message())
+        bail!("request failed: {}", response.error_reason())
     }
 }
 
@@ -1075,7 +1073,7 @@ mod tests {
             .expect("expected send_get_request_without_args() to fail");
         assert_eq!(
             err.description(),
-            "request failed with HTTP 404: Not Found"
+            "request failed: Not Found (HTTP 404)"
         );
     }
 
@@ -1103,7 +1101,7 @@ mod tests {
             .expect("expected send_get_request_without_args() to fail");
         assert_eq!(
             err.description(),
-            "request failed with HTTP 404: Not Found"
+            "request failed: Not Found (HTTP 404)"
         );
     }
 }
