@@ -1017,6 +1017,7 @@ mod tests {
             Ok(
                 APIResponseBuilder::new()
                     .with_status_code(404)
+                    .with_status_message("Not Found")
                     .build()
             )
         );
@@ -1027,6 +1028,11 @@ mod tests {
             &APIArguments::new()
         );
 
-        assert!(response.is_err());
+        let err = response.err()
+            .expect("expected send_get_request_without_args() to fail");
+        assert_eq!(
+            err.description(),
+            "request failed with HTTP 404: Not Found"
+        );
     }
 }
