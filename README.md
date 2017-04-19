@@ -9,6 +9,11 @@ A Rust library and tools providing easy access to the
 The library is **at the beginning of its development** and its state is
 **pre-alpha** (**highly experimental**).
 
+## Documentation
+
+An automatically generated API documentation will be available after the first
+version is released.
+
 ## License
 
 Licensed under either of
