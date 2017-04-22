@@ -5,6 +5,7 @@
 extern crate json;
 extern crate retdec;
 
+#[allow(dead_code)]
 mod common;
 
 use common::path_to_sample;
