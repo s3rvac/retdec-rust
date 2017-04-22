@@ -95,7 +95,11 @@ mod tests {
     use connection::tests::APIConnectionMock;
     use connection::tests::APIResponseBuilder;
 
-    fn create_fileinfo(settings: Settings) -> (Rc<RefCell<APIConnectionMock>>, Fileinfo) {
+    fn create_fileinfo(mut settings: Settings) -> (Rc<RefCell<APIConnectionMock>>, Fileinfo) {
+        // Ensure that we always use the default API URL in tests (i.e. it is
+        // not overridden when the RETDEC_API_URL environment variable is set).
+        // Otherwise, APIConnectionMock.add_response() will not work properly.
+        settings = settings.with_api_url("https://retdec.com/service/api");
         let conn = Rc::new(
             RefCell::new(
                 APIConnectionMock::new(settings.clone())

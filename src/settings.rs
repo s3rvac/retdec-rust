@@ -19,8 +19,6 @@ const DEFAULT_API_URL: &'static str = "https://retdec.com/service/api";
 ///     .with_api_key("MY-API-KEY");
 ///
 /// assert_eq!(s.api_key(), Some(&"MY-API-KEY".to_string()));
-/// // The API URL is provided by default:
-/// assert_eq!(s.api_url(), &"https://retdec.com/service/api");
 /// ```
 #[derive(Debug, Clone)]
 pub struct Settings {

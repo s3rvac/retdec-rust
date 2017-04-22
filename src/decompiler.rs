@@ -94,7 +94,11 @@ mod tests {
     use connection::tests::APIResponseBuilder;
     use decompilation::DecompilationArguments;
 
-    fn create_decompiler(settings: Settings) -> (Rc<RefCell<APIConnectionMock>>, Decompiler) {
+    fn create_decompiler(mut settings: Settings) -> (Rc<RefCell<APIConnectionMock>>, Decompiler) {
+        // Ensure that we always use the default API URL in tests (i.e. it is
+        // not overridden when the RETDEC_API_URL environment variable is set).
+        // Otherwise, APIConnectionMock.add_response() will not work properly.
+        settings = settings.with_api_url("https://retdec.com/service/api");
         let conn = Rc::new(
             RefCell::new(
                 APIConnectionMock::new(settings.clone())
