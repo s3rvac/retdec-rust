@@ -99,13 +99,13 @@ impl Decompilation {
         Ok(())
     }
 
-    /// Returns the content of the output HLL file (C, Python').
+    /// Returns the content of the output HLL file (e.g. C code).
     ///
     /// This function should be called only after the decompilation has
     /// finished.
     ///
     /// Accesses the API.
-    pub fn get_output_hll(&mut self) -> Result<String> {
+    pub fn get_output_hll_code(&mut self) -> Result<String> {
         let output_url = format!("{}/outputs/hll", self.resource.base_url);
         let response = self.resource.conn.send_get_request_without_args(&output_url)?;
         response.body_as_string()

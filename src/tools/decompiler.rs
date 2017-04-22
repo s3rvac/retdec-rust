@@ -67,8 +67,8 @@ fn run(args: &Vec<String>) -> Result<()> {
         .with_input_file(Path::new(&input_file).to_path_buf());
     let mut decompilation = decompiler.start_decompilation(&args)?;
     decompilation.wait_until_finished()?;
-    let output_hll = decompilation.get_output_hll()?;
-    print_decompilation_result(&output_hll)?;
+    let output_code = decompilation.get_output_hll_code()?;
+    print_decompilation_result(&output_code)?;
     Ok(())
 }
 

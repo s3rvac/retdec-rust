@@ -29,8 +29,8 @@ use settings::Settings;
 ///     .with_input_file(Path::new(&"file.exe").to_path_buf());
 /// let mut decompilation = decompiler.start_decompilation(&args).unwrap();
 /// decompilation.wait_until_finished().unwrap();
-/// let output_hll = decompilation.get_output_hll().unwrap();
-/// print!("{}", output_hll);
+/// let output_code = decompilation.get_output_hll_code().unwrap();
+/// print!("{}", output_code);
 /// ```
 pub struct Decompiler {
     conn_factory: Box<APIConnectionFactory>,
