@@ -94,11 +94,12 @@ mod tests {
     use connection::tests::APIResponseBuilder;
     use decompilation::DecompilationArguments;
 
-    fn create_decompiler(mut settings: Settings) -> (Rc<RefCell<APIConnectionMock>>, Decompiler) {
-        // Ensure that we always use the default API URL in tests (i.e. it is
-        // not overridden when the RETDEC_API_URL environment variable is set).
-        // Otherwise, APIConnectionMock.add_response() will not work properly.
-        settings = settings.with_api_url("https://retdec.com/service/api");
+    fn create_decompiler() -> (Rc<RefCell<APIConnectionMock>>, Decompiler) {
+        // We need to force an API URL to prevent it from being overriden by
+        // setting the RETDEC_API_URL environment variable.
+        let settings = Settings::new()
+            .with_api_key("test")
+            .with_api_url("https://retdec.com/service/api");
         let conn = Rc::new(
             RefCell::new(
                 APIConnectionMock::new(settings.clone())
@@ -115,7 +116,7 @@ mod tests {
 
     #[test]
     fn decompiler_start_decompilation_starts_decompilation_with_correct_arguments() {
-        let (conn, decompiler) = create_decompiler(Settings::new());
+        let (conn, decompiler) = create_decompiler();
         let input_file = Path::new(&"file.exe").to_path_buf();
         let args = DecompilationArguments::new()
             .with_input_file(input_file.clone());
@@ -148,7 +149,7 @@ mod tests {
 
     #[test]
     fn decompiler_start_decompilation_returns_error_when_input_file_is_not_given() {
-        let (conn, decompiler) = create_decompiler(Settings::new());
+        let (conn, decompiler) = create_decompiler();
         let args = DecompilationArguments::new();
         conn.borrow_mut().add_response(
             "POST",
@@ -171,7 +172,7 @@ mod tests {
 
     #[test]
     fn decompiler_start_decompilation_returns_error_when_returned_json_does_not_contain_id() {
-        let (conn, decompiler) = create_decompiler(Settings::new());
+        let (conn, decompiler) = create_decompiler();
         let input_file = Path::new(&"file.exe").to_path_buf();
         let args = DecompilationArguments::new()
             .with_input_file(input_file.clone());

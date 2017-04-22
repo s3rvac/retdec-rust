@@ -95,11 +95,12 @@ mod tests {
     use connection::tests::APIConnectionMock;
     use connection::tests::APIResponseBuilder;
 
-    fn create_fileinfo(mut settings: Settings) -> (Rc<RefCell<APIConnectionMock>>, Fileinfo) {
-        // Ensure that we always use the default API URL in tests (i.e. it is
-        // not overridden when the RETDEC_API_URL environment variable is set).
-        // Otherwise, APIConnectionMock.add_response() will not work properly.
-        settings = settings.with_api_url("https://retdec.com/service/api");
+    fn create_fileinfo() -> (Rc<RefCell<APIConnectionMock>>, Fileinfo) {
+        // We need to force an API URL to prevent it from being overriden by
+        // setting the RETDEC_API_URL environment variable.
+        let settings = Settings::new()
+            .with_api_key("test")
+            .with_api_url("https://retdec.com/service/api");
         let conn = Rc::new(
             RefCell::new(
                 APIConnectionMock::new(settings.clone())
@@ -116,7 +117,7 @@ mod tests {
 
     #[test]
     fn fileinfo_start_analysis_starts_analysis_with_correct_arguments() {
-        let (conn, fileinfo) = create_fileinfo(Settings::new());
+        let (conn, fileinfo) = create_fileinfo();
         let input_file = Path::new(&"file.exe").to_path_buf();
         let args = AnalysisArguments::new()
             .with_output_format("json")
@@ -152,7 +153,7 @@ mod tests {
 
     #[test]
     fn fileinfo_start_analysis_returns_error_when_input_file_is_not_given() {
-        let (conn, fileinfo) = create_fileinfo(Settings::new());
+        let (conn, fileinfo) = create_fileinfo();
         let args = AnalysisArguments::new();
         conn.borrow_mut().add_response(
             "POST",
@@ -175,7 +176,7 @@ mod tests {
 
     #[test]
     fn fileinfo_start_analysis_returns_error_when_returned_json_does_not_contain_id() {
-        let (conn, fileinfo) = create_fileinfo(Settings::new());
+        let (conn, fileinfo) = create_fileinfo();
         let input_file = Path::new(&"file.exe").to_path_buf();
         let args = AnalysisArguments::new()
             .with_input_file(input_file.clone());
