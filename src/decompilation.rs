@@ -1,10 +1,12 @@
 //! Decompilations from the decompiler service.
 
 use std::path::PathBuf;
-use std::thread;
+use std::time::Duration;
 
 use connection::APIConnection;
 use error::Result;
+use error::ResultExt;
+use resource::Resource;
 
 /// Arguments for a decompilation.
 ///
@@ -47,8 +49,7 @@ impl DecompilationArguments {
 
 /// Decompilation from the decompiler service.
 pub struct Decompilation {
-    id: String,
-    conn: Box<APIConnection>,
+    resource: Resource,
 }
 
 impl Decompilation {
@@ -57,29 +58,41 @@ impl Decompilation {
     /// Only for internal use.
     pub fn new<I: Into<String>>(id: I, conn: Box<APIConnection>) -> Self {
         Decompilation {
-            id: id.into(),
-            conn: conn,
+            resource: Resource::new("decompiler", "decompilations", id, conn)
         }
     }
 
     /// Returns the ID of the decompilation.
+    ///
+    /// Does not access the API.
     pub fn id(&self) -> &String {
-        &self.id
+        &self.resource.id
     }
 
-    /// Waits until the decompilation is finished.
+    /// Has the decompilation finished?
     ///
-    /// When this method returns and the result is `Ok()`, the decompilation
-    /// has finished.
-    pub fn wait_until_finished(&mut self) -> Result<()> {
-        loop {
-            thread::sleep(::std::time::Duration::from_millis(500));
+    /// Does not access the API, so the returned value may be outdated. In a
+    /// greater detail, when it returns `true`, the decompilation has surely
+    /// finished. However, when it returns `false`, the decompilation might or
+    /// might not have finished.
+    pub fn finished(&self) -> bool {
+        self.resource.finished
+    }
 
-            let status_url = format!("{}/decompiler/decompilations/{}/status", self.conn.api_url(), self.id);
-            let response = self.conn.send_get_request_without_args(&status_url)?;
-            let finished = response.json_value_as_bool("finished")
-                .ok_or(format!("{} returned invalid JSON response", status_url))?;
-            if finished {
+    /// Waits until the decompilation has finished.
+    ///
+    /// When this method returns `Ok()`, the decompilation has finished.
+    ///
+    /// Accesses the API.
+    pub fn wait_until_finished(&mut self) -> Result<()> {
+        // Currently, the retdec.com's API does not support push notifications,
+        // so we have to poll for the status ourselves.
+        while !self.finished() {
+            self.resource.wait_for(Duration::from_millis(500));
+
+            self.resource.update_status()
+                .chain_err(|| "failed to update analysis status")?;
+            if self.finished() {
                 break;
             }
         }
@@ -91,14 +104,10 @@ impl Decompilation {
     /// This function should be called only after the decompilation has
     /// finished.
     ///
-    /// May access the API.
+    /// Accesses the API.
     pub fn get_output_hll(&mut self) -> Result<String> {
-        let output_url = format!(
-            "{}/decompiler/decompilations/{}/outputs/hll",
-            self.conn.api_url(),
-            self.id
-        );
-        let response = self.conn.send_get_request_without_args(&output_url)?;
+        let output_url = format!("{}/outputs/hll", self.resource.base_url);
+        let response = self.resource.conn.send_get_request_without_args(&output_url)?;
         response.body_as_string()
     }
 }

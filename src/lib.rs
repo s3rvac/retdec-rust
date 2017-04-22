@@ -51,4 +51,5 @@ pub mod settings;
 pub mod tools;
 
 mod connection;
+mod resource;
 mod utils;

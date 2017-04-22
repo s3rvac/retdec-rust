@@ -1,10 +1,12 @@
 //! Analyses from the fileinfo service.
 
 use std::path::PathBuf;
-use std::thread;
+use std::time::Duration;
 
 use connection::APIConnection;
 use error::Result;
+use error::ResultExt;
+use resource::Resource;
 
 /// Arguments for a file analysis.
 ///
@@ -76,8 +78,7 @@ impl AnalysisArguments {
 
 /// Analysis from the fileinfo service.
 pub struct Analysis {
-    id: String,
-    conn: Box<APIConnection>,
+    resource: Resource,
 }
 
 impl Analysis {
@@ -86,29 +87,41 @@ impl Analysis {
     /// Only for internal use.
     pub fn new<I: Into<String>>(id: I, conn: Box<APIConnection>) -> Self {
         Analysis {
-            id: id.into(),
-            conn: conn,
+            resource: Resource::new("fileinfo", "analyses", id, conn)
         }
     }
 
     /// Returns the ID of the analysis.
+    ///
+    /// Does not access the API.
     pub fn id(&self) -> &String {
-        &self.id
+        &self.resource.id
     }
 
-    /// Waits until the analysis is finished.
+    /// Has the analysis finished?
     ///
-    /// When this method returns and the result is `Ok()`, the analysis has
-    /// finished.
-    pub fn wait_until_finished(&mut self) -> Result<()> {
-        loop {
-            thread::sleep(::std::time::Duration::from_millis(500));
+    /// Does not access the API, so the returned value may be outdated. In a
+    /// greater detail, when it returns `true`, the analysis has surely
+    /// finished. However, when it returns `false`, the analysis might or might
+    /// not have finished.
+    pub fn finished(&self) -> bool {
+        self.resource.finished
+    }
 
-            let status_url = format!("{}/fileinfo/analyses/{}/status", self.conn.api_url(), self.id);
-            let response = self.conn.send_get_request_without_args(&status_url)?;
-            let finished = response.json_value_as_bool("finished")
-                .ok_or(format!("{} returned invalid JSON response", status_url))?;
-            if finished {
+    /// Waits until the analysis has finished.
+    ///
+    /// When this method returns `Ok()`, the analysis has finished.
+    ///
+    /// Accesses the API.
+    pub fn wait_until_finished(&mut self) -> Result<()> {
+        // Currently, the retdec.com's API does not support push notifications,
+        // so we have to poll for the status ourselves.
+        while !self.finished() {
+            self.resource.wait_for(Duration::from_millis(500));
+
+            self.resource.update_status()
+                .chain_err(|| "failed to update analysis status")?;
+            if self.finished() {
                 break;
             }
         }
@@ -119,9 +132,11 @@ impl Analysis {
     ///
     /// The format of the output depends on the format selected when starting
     /// an analysis (`output_format`).
+    ///
+    /// Accesses the API.
     pub fn get_output(&mut self) -> Result<String> {
-        let output_url = format!("{}/fileinfo/analyses/{}/output", self.conn.api_url(), self.id);
-        let response = self.conn.send_get_request_without_args(&output_url)?;
+        let output_url = format!("{}/output", self.resource.base_url);
+        let response = self.resource.conn.send_get_request_without_args(&output_url)?;
         response.body_as_string()
     }
 }
