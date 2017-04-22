@@ -135,8 +135,13 @@ impl Analysis {
     ///
     /// Accesses the API.
     pub fn get_output(&mut self) -> Result<String> {
+        self.ensure_analysis_succeeded()?;
         let output_url = format!("{}/output", self.resource.base_url);
         let response = self.resource.conn.send_get_request_without_args(&output_url)?;
         response.body_as_string()
+    }
+
+    fn ensure_analysis_succeeded(&self) -> Result<()> {
+        self.resource.ensure_succeeded("analysis")
     }
 }

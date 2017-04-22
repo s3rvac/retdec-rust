@@ -106,8 +106,13 @@ impl Decompilation {
     ///
     /// Accesses the API.
     pub fn get_output_hll_code(&mut self) -> Result<String> {
+        self.ensure_decompilation_succeeded()?;
         let output_url = format!("{}/outputs/hll", self.resource.base_url);
         let response = self.resource.conn.send_get_request_without_args(&output_url)?;
         response.body_as_string()
+    }
+
+    fn ensure_decompilation_succeeded(&self) -> Result<()> {
+        self.resource.ensure_succeeded("decompilation")
     }
 }

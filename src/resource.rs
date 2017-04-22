@@ -70,4 +70,13 @@ impl Resource {
     pub fn wait_for(&self, duration: Duration) {
         thread::sleep(duration);
     }
+
+    /// Returns an error when the resource failed.
+    pub fn ensure_succeeded(&self, resource_name: &str) -> Result<()> {
+        if self.succeeded {
+            Ok(())
+        } else {
+            bail!("{} has not succeeded", resource_name)
+        }
+    }
 }
