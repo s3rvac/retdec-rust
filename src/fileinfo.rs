@@ -16,9 +16,8 @@ use settings::Settings;
 /// # Examples
 ///
 /// ```no_run
-/// use std::path::Path;
-///
 /// use retdec::analysis::AnalysisArguments;
+/// use retdec::file::File;
 /// use retdec::fileinfo::Fileinfo;
 /// use retdec::settings::Settings;
 ///
@@ -26,8 +25,8 @@ use settings::Settings;
 ///     .with_api_key("MY-API-KEY");
 /// let fileinfo = Fileinfo::new(settings);
 /// let args = AnalysisArguments::new()
-///     .with_input_file(Path::new(&"file.exe").to_path_buf());
-/// let mut analysis = fileinfo.start_analysis(&args).unwrap();
+///     .with_input_file(File::from_path("file.exe").unwrap());
+/// let mut analysis = fileinfo.start_analysis(args).unwrap();
 /// analysis.wait_until_finished().unwrap();
 /// let output = analysis.get_output().unwrap();
 /// print!("{}", output);
@@ -49,7 +48,7 @@ impl Fileinfo {
     }
 
     /// Starts a new file analysis with the given arguments.
-    pub fn start_analysis(&self, args: &AnalysisArguments) -> Result<Analysis> {
+    pub fn start_analysis(&self, args: AnalysisArguments) -> Result<Analysis> {
         let mut conn = self.conn_factory.new_connection();
         let url = format!("{}/fileinfo/analyses", conn.api_url());
         let api_args = self.create_api_args(args)?;
@@ -60,13 +59,13 @@ impl Fileinfo {
         Ok(Analysis::new(id, conn))
     }
 
-    fn create_api_args(&self, args: &AnalysisArguments) -> Result<APIArguments> {
+    fn create_api_args(&self, args: AnalysisArguments) -> Result<APIArguments> {
         let mut api_args = APIArguments::new();
         api_args.add_opt_string_arg("output_format", args.output_format());
         api_args.add_opt_bool_arg("verbose", args.verbose());
         match args.input_file() {
-            Some(ref input_file) => {
-                api_args.add_file("input", input_file);
+            Some(input_file) => {
+                api_args.add_file("input", input_file.clone());
             }
             None => {
                 bail!("no input file given");
@@ -86,7 +85,6 @@ mod tests {
     use super::*;
 
     use std::cell::RefCell;
-    use std::path::Path;
     use std::rc::Rc;
 
     use analysis::AnalysisArguments;
@@ -94,6 +92,7 @@ mod tests {
     use connection::tests::APIConnectionFactoryMock;
     use connection::tests::APIConnectionMock;
     use connection::tests::APIResponseBuilder;
+    use file::File;
 
     fn create_fileinfo() -> (Rc<RefCell<APIConnectionMock>>, Fileinfo) {
         // We need to force an API URL to prevent it from being overriden by
@@ -118,7 +117,7 @@ mod tests {
     #[test]
     fn fileinfo_start_analysis_starts_analysis_with_correct_arguments() {
         let (conn, fileinfo) = create_fileinfo();
-        let input_file = Path::new(&"file.exe").to_path_buf();
+        let input_file = File::from_content_with_name(b"content", "file.exe");
         let args = AnalysisArguments::new()
             .with_output_format("json")
             .with_verbose(true)
@@ -136,7 +135,7 @@ mod tests {
             )
         );
 
-        let analysis = fileinfo.start_analysis(&args)
+        let analysis = fileinfo.start_analysis(args)
             .expect("analysis should have succeeded");
 
         assert_eq!(*analysis.id(), "ID");
@@ -168,7 +167,7 @@ mod tests {
             )
         );
 
-        let result = fileinfo.start_analysis(&args);
+        let result = fileinfo.start_analysis(args);
 
         let err = result.err().expect("expected start_analysis() to fail");
         assert_eq!(err.description(), "no input file given");
@@ -177,7 +176,7 @@ mod tests {
     #[test]
     fn fileinfo_start_analysis_returns_error_when_returned_json_does_not_contain_id() {
         let (conn, fileinfo) = create_fileinfo();
-        let input_file = Path::new(&"file.exe").to_path_buf();
+        let input_file = File::from_content_with_name(b"content", "file.exe");
         let args = AnalysisArguments::new()
             .with_input_file(input_file.clone());
         conn.borrow_mut().add_response(
@@ -191,7 +190,7 @@ mod tests {
             )
         );
 
-        let result = fileinfo.start_analysis(&args);
+        let result = fileinfo.start_analysis(args);
 
         let err = result.err().expect("expected start_analysis() to fail");
         assert_eq!(

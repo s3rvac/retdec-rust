@@ -16,18 +16,17 @@ use settings::Settings;
 /// # Examples
 ///
 /// ```no_run
-/// use std::path::Path;
-///
 /// use retdec::decompilation::DecompilationArguments;
 /// use retdec::decompiler::Decompiler;
+/// use retdec::file::File;
 /// use retdec::settings::Settings;
 ///
 /// let settings = Settings::new()
 ///     .with_api_key("MY-API-KEY");
 /// let decompiler = Decompiler::new(settings);
 /// let args = DecompilationArguments::new()
-///     .with_input_file(Path::new(&"file.exe").to_path_buf());
-/// let mut decompilation = decompiler.start_decompilation(&args).unwrap();
+///     .with_input_file(File::from_path("file.exe").unwrap());
+/// let mut decompilation = decompiler.start_decompilation(args).unwrap();
 /// decompilation.wait_until_finished().unwrap();
 /// let output_code = decompilation.get_output_hll_code().unwrap();
 /// print!("{}", output_code);
@@ -49,7 +48,7 @@ impl Decompiler {
     }
 
     /// Starts a new decompilation with the given arguments.
-    pub fn start_decompilation(&self, args: &DecompilationArguments) -> Result<Decompilation> {
+    pub fn start_decompilation(&self, args: DecompilationArguments) -> Result<Decompilation> {
         let mut conn = self.conn_factory.new_connection();
         let url = format!("{}/decompiler/decompilations", conn.api_url());
         let api_args = self.create_api_args(args)?;
@@ -60,12 +59,12 @@ impl Decompiler {
         Ok(Decompilation::new(id, conn))
     }
 
-    fn create_api_args(&self, args: &DecompilationArguments) -> Result<APIArguments> {
+    fn create_api_args(&self, args: DecompilationArguments) -> Result<APIArguments> {
         let mut api_args = APIArguments::new();
         api_args.add_string_arg("mode", "bin");
         match args.input_file() {
-            Some(ref input_file) => {
-                api_args.add_file("input", input_file);
+            Some(input_file) => {
+                api_args.add_file("input", input_file.clone());
             }
             None => {
                 bail!("no input file given");
@@ -85,7 +84,6 @@ mod tests {
     use super::*;
 
     use std::cell::RefCell;
-    use std::path::Path;
     use std::rc::Rc;
 
     use connection::tests::APIArgumentsBuilder;
@@ -93,6 +91,7 @@ mod tests {
     use connection::tests::APIConnectionMock;
     use connection::tests::APIResponseBuilder;
     use decompilation::DecompilationArguments;
+    use file::File;
 
     fn create_decompiler() -> (Rc<RefCell<APIConnectionMock>>, Decompiler) {
         // We need to force an API URL to prevent it from being overriden by
@@ -117,7 +116,7 @@ mod tests {
     #[test]
     fn decompiler_start_decompilation_starts_decompilation_with_correct_arguments() {
         let (conn, decompiler) = create_decompiler();
-        let input_file = Path::new(&"file.exe").to_path_buf();
+        let input_file = File::from_content_with_name(b"content", "file.exe");
         let args = DecompilationArguments::new()
             .with_input_file(input_file.clone());
         conn.borrow_mut().add_response(
@@ -133,7 +132,7 @@ mod tests {
             )
         );
 
-        let decompilation = decompiler.start_decompilation(&args)
+        let decompilation = decompiler.start_decompilation(args)
             .expect("decompilation should have succeeded");
 
         assert_eq!(*decompilation.id(), "ID");
@@ -142,7 +141,7 @@ mod tests {
             "https://retdec.com/service/api/decompiler/decompilations",
             APIArgumentsBuilder::new()
                 .with_string_arg("mode", "bin")
-                .with_file("input", input_file.clone())
+                .with_file("input", input_file)
                 .build()
         ));
     }
@@ -164,7 +163,7 @@ mod tests {
             )
         );
 
-        let result = decompiler.start_decompilation(&args);
+        let result = decompiler.start_decompilation(args);
 
         let err = result.err().expect("expected start_decompilation() to fail");
         assert_eq!(err.description(), "no input file given");
@@ -173,9 +172,9 @@ mod tests {
     #[test]
     fn decompiler_start_decompilation_returns_error_when_returned_json_does_not_contain_id() {
         let (conn, decompiler) = create_decompiler();
-        let input_file = Path::new(&"file.exe").to_path_buf();
+        let input_file = File::from_content_with_name(b"content", "file.exe");
         let args = DecompilationArguments::new()
-            .with_input_file(input_file.clone());
+            .with_input_file(input_file);
         conn.borrow_mut().add_response(
             "POST",
             "https://retdec.com/service/api/decompiler/decompilations",
@@ -187,7 +186,7 @@ mod tests {
             )
         );
 
-        let result = decompiler.start_decompilation(&args);
+        let result = decompiler.start_decompilation(args);
 
         let err = result.err().expect("expected start_decompilation() to fail");
         assert_eq!(

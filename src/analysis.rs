@@ -1,32 +1,31 @@
 //! Analyses from the fileinfo service.
 
-use std::path::PathBuf;
 use std::time::Duration;
 
 use connection::APIConnection;
 use error::Result;
 use error::ResultExt;
+use file::File;
 use resource::Resource;
 
 /// Arguments for a file analysis.
 ///
 /// # Examples
 ///
-/// ```
-/// use std::path::Path;
-///
+/// ```no_run
 /// use retdec::analysis::AnalysisArguments;
+/// use retdec::file::File;
 ///
 /// let args = AnalysisArguments::new()
 ///     .with_output_format("json")
 ///     .with_verbose(true)
-///     .with_input_file(Path::new("file.exe").to_path_buf());
+///     .with_input_file(File::from_path("file.exe").unwrap());
 /// ```
 #[derive(Debug, Default)]
 pub struct AnalysisArguments {
     output_format: Option<String>,
     verbose: Option<bool>,
-    input_file: Option<PathBuf>,
+    input_file: Option<File>,
 }
 
 impl AnalysisArguments {
@@ -51,10 +50,10 @@ impl AnalysisArguments {
         self
     }
 
-    /// Sets the path to the file to be analyzed.
+    /// Sets the file to be analyzed.
     ///
     /// This parameter is required. Without it, there is nothing to analyze.
-    pub fn with_input_file(mut self, input_file: PathBuf) -> Self {
+    pub fn with_input_file(mut self, input_file: File) -> Self {
         self.input_file = Some(input_file);
         self
     }
@@ -70,8 +69,8 @@ impl AnalysisArguments {
         self.verbose
     }
 
-    /// Returns the path to the file to be analyzed.
-    pub fn input_file(&self) -> Option<&PathBuf> {
+    /// Returns the the file to be analyzed.
+    pub fn input_file(&self) -> Option<&File> {
         self.input_file.as_ref()
     }
 }

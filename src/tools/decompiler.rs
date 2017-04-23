@@ -2,7 +2,6 @@
 
 use std::io::Write;
 use std::io;
-use std::path::Path;
 
 use clap::App;
 use clap::AppSettings;
@@ -14,6 +13,7 @@ use decompilation::DecompilationArguments;
 use decompiler::Decompiler;
 use error::Result;
 use error::ResultExt;
+use file::File;
 use settings::Settings;
 
 fn parse_args<'a>(args: &Vec<String>) -> ArgMatches<'a> {
@@ -64,8 +64,8 @@ fn run(args: &Vec<String>) -> Result<()> {
 
     let decompiler = Decompiler::new(settings);
     let args = DecompilationArguments::new()
-        .with_input_file(Path::new(&input_file).to_path_buf());
-    let mut decompilation = decompiler.start_decompilation(&args)?;
+        .with_input_file(File::from_path(&input_file)?);
+    let mut decompilation = decompiler.start_decompilation(args)?;
     decompilation.wait_until_finished()?;
     let output_code = decompilation.get_output_hll_code()?;
     print_decompilation_result(&output_code)?;

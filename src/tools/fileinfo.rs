@@ -2,7 +2,6 @@
 
 use std::io::Write;
 use std::io;
-use std::path::Path;
 
 use clap::App;
 use clap::AppSettings;
@@ -13,6 +12,7 @@ use VERSION;
 use analysis::AnalysisArguments;
 use error::Result;
 use error::ResultExt;
+use file::File;
 use fileinfo::Fileinfo;
 use settings::Settings;
 
@@ -79,8 +79,8 @@ fn run(args: &Vec<String>) -> Result<()> {
     let args = AnalysisArguments::new()
         .with_output_format(args.value_of("output_format").unwrap())
         .with_verbose(args.is_present("verbose"))
-        .with_input_file(Path::new(&input_file).to_path_buf());
-    let mut analysis = fileinfo.start_analysis(&args)?;
+        .with_input_file(File::from_path(&input_file)?);
+    let mut analysis = fileinfo.start_analysis(args)?;
     analysis.wait_until_finished()?;
     let output = analysis.get_output()?;
     print_analysis_result(&output)?;

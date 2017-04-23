@@ -3,7 +3,6 @@
 use std::collections::HashMap;
 use std::collections::hash_map::Iter as ArgIter;
 use std::io::Read;
-use std::path::PathBuf;
 use std::str;
 
 use hyper::Url as HyperUrl;
@@ -14,11 +13,11 @@ use hyper::method::Method as HyperMethod;
 use hyper::net::Fresh;
 use json::JsonValue;
 use json;
-use multipart::client::lazy::Multipart;
-use multipart::client::SizedRequest;
+use multipart::client::Multipart;
 
 use error::Result;
 use error::ResultExt;
+use file::File;
 use settings::Settings;
 use utils::current_platform_name;
 
@@ -134,7 +133,7 @@ impl APIResponse {
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct APIArguments {
     args: HashMap<String, String>,
-    files: HashMap<String, PathBuf>,
+    files: HashMap<String, File>,
 }
 
 impl APIArguments {
@@ -193,20 +192,19 @@ impl APIArguments {
     }
 
     /// Adds the given file under the given name.
-    pub fn add_file<N, P>(&mut self, name: N, file: P)
-        where N: Into<String>,
-              P: Into<PathBuf>
+    pub fn add_file<N>(&mut self, name: N, file: File)
+        where N: Into<String>
     {
         self.files.insert(name.into(), file.into());
     }
 
     /// Returns a file with the given name.
-    pub fn get_file(&self, name: &str) -> Option<&PathBuf> {
+    pub fn get_file(&self, name: &str) -> Option<&File> {
         self.files.get(name)
     }
 
-    /// Returns an iterator over files (`name` => `path`).
-    pub fn files(&self) -> ArgIter<String, PathBuf> {
+    /// Returns an iterator over files (`name` => `file`).
+    pub fn files(&self) -> ArgIter<String, File> {
         self.files.iter()
     }
 }
@@ -390,18 +388,17 @@ impl APIConnection for HyperAPIConnection {
                          args: &APIArguments) -> Result<APIResponse> {
         let request = self.prepare_request(HyperMethod::Post, &url, &args)
             .chain_err(|| format!("failed to prepare a POST request to {}", url))?;
-        let mut mp = Multipart::new();
-        for (name, file) in args.files() {
-            mp.add_file(
-                name.clone(),
-                file.to_str().ok_or(format!("cannot convert {:?} to str", file))?
-            );
-        }
         // The retdec.com API does not support chunked requests, so ensure that
-        // we send a request with the Content-Length header.
+        // we send a request with the Content-Length header by using
+        // from_request_sized() instead of from_request().
         // https://retdec.com/api/docs/essential_information.html#transfer-encoding
-        let request = SizedRequest::from_request(request);
-        let response = mp.send(request)
+        let mut mp = Multipart::from_request_sized(request)
+            .chain_err(|| format!("failed to prepare a multipart POST request to {}", url))?;
+        for (name, file) in args.files() {
+            mp.write_stream(name, &mut file.content(), Some(file.name()), None)
+                .chain_err(|| format!("failed to add a file into a POST request to {}", url))?;
+        }
+        let response = mp.send()
             .chain_err(|| format!("failed to send a POST request to {}", url))?;
         self.parse_response(response)
     }
@@ -436,7 +433,6 @@ pub mod tests {
     use super::*;
 
     use std::cell::RefCell;
-    use std::path::Path;
     use std::rc::Rc;
 
     /// A builder of API arguments.
@@ -469,9 +465,8 @@ pub mod tests {
         }
 
         /// Adds a new file with the given name.
-        pub fn with_file<N, P>(mut self, name: N, file: P) -> Self
-            where N: Into<String>,
-                P: Into<PathBuf>
+        pub fn with_file<N>(mut self, name: N, file: File) -> Self
+            where N: Into<String>
         {
             self.args.add_file(name, file);
             self
@@ -973,21 +968,24 @@ pub mod tests {
     fn api_arguments_add_file_adds_file() {
         let mut args = APIArguments::new();
 
-        args.add_file("input", "file.exe");
+        args.add_file("input", File::from_content_with_name(b"content", "file.exe"));
 
-        assert_eq!(args.get_file("input"), Some(&Path::new("file.exe").to_path_buf()));
+        assert_eq!(
+            args.get_file("input"),
+            Some(&File::from_content_with_name(b"content", "file.exe"))
+        );
     }
 
     #[test]
     fn api_arguments_files_returns_iterator_over_files() {
         let mut args = APIArguments::new();
 
-        args.add_file("input", "file.exe");
+        args.add_file("input", File::from_content_with_name(b"content", "file.exe"));
 
-        let files: Vec<(&String, &PathBuf)> = args.files().collect();
+        let files: Vec<(&String, &File)> = args.files().collect();
         assert_eq!(files.len(), 1);
         assert_eq!(*files[0].0, "input".to_string());
-        assert_eq!(*files[0].1, Path::new("file.exe").to_path_buf());
+        assert_eq!(*files[0].1, File::from_content_with_name(b"content", "file.exe"));
     }
 
     #[test]
