@@ -236,17 +236,17 @@ pub trait APIConnection {
     /// Sends an HTTP GET request to the given url with the given arguments.
     fn send_get_request(&mut self,
                         url: &str,
-                        args: &APIArguments) -> Result<APIResponse>;
+                        args: APIArguments) -> Result<APIResponse>;
 
     /// Sends an HTTP POST request to the given url with the given arguments.
     fn send_post_request(&mut self,
                          url: &str,
-                         files: &APIArguments) -> Result<APIResponse>;
+                         files: APIArguments) -> Result<APIResponse>;
 
     /// Sends an HTTP GET request to the given url without any arguments.
     fn send_get_request_without_args(&mut self,
                                      url: &str) -> Result<APIResponse> {
-        self.send_get_request(url, &APIArguments::new())
+        self.send_get_request(url, APIArguments::new())
     }
 }
 
@@ -282,7 +282,7 @@ impl APIConnection for ResponseVerifyingAPIConnection {
 
     fn send_get_request(&mut self,
                         url: &str,
-                        args: &APIArguments) -> Result<APIResponse> {
+                        args: APIArguments) -> Result<APIResponse> {
         let response = self.conn.send_get_request(url, args)?;
         self.ensure_request_succeeded(&response)?;
         Ok(response)
@@ -290,7 +290,7 @@ impl APIConnection for ResponseVerifyingAPIConnection {
 
     fn send_post_request(&mut self,
                          url: &str,
-                         args: &APIArguments) -> Result<APIResponse> {
+                         args: APIArguments) -> Result<APIResponse> {
         let response = self.conn.send_post_request(url, args)?;
         self.ensure_request_succeeded(&response)?;
         Ok(response)
@@ -392,7 +392,7 @@ impl APIConnection for HyperAPIConnection {
 
     fn send_get_request(&mut self,
                         url: &str,
-                        args: &APIArguments) -> Result<APIResponse> {
+                        args: APIArguments) -> Result<APIResponse> {
         let request = self.prepare_request(HyperMethod::Get, &url, &args)
             .chain_err(|| format!("failed to prepare a GET request to {}", url))?;
         let response = request.start()
@@ -404,7 +404,7 @@ impl APIConnection for HyperAPIConnection {
 
     fn send_post_request(&mut self,
                          url: &str,
-                         args: &APIArguments) -> Result<APIResponse> {
+                         args: APIArguments) -> Result<APIResponse> {
         let request = self.prepare_request(HyperMethod::Post, &url, &args)
             .chain_err(|| format!("failed to prepare a POST request to {}", url))?;
         // The retdec.com API does not support chunked requests, so ensure that
@@ -557,7 +557,7 @@ pub mod tests {
                 &APIRequestInfo {
                     method: method,
                     url: url.into(),
-                    args: args
+                    args: args,
                 }
             )
         }
@@ -565,14 +565,14 @@ pub mod tests {
         fn add_request<U>(&mut self,
                     method: &'static str,
                     url: U,
-                    args: &APIArguments)
+                    args: APIArguments)
             where U: Into<String>
         {
             self.requests.push(
                 APIRequestInfo {
                     method: method,
                     url: url.into(),
-                    args: (*args).clone(),
+                    args: args,
                 }
             );
         }
@@ -601,14 +601,14 @@ pub mod tests {
 
         fn send_get_request(&mut self,
                             url: &str,
-                            args: &APIArguments) -> Result<APIResponse> {
+                            args: APIArguments) -> Result<APIResponse> {
             self.add_request("GET", url, args);
             self.find_response("GET", url)
         }
 
         fn send_post_request(&mut self,
                             url: &str,
-                            args: &APIArguments) -> Result<APIResponse> {
+                            args: APIArguments) -> Result<APIResponse> {
             self.add_request("POST", url, args);
             self.find_response("POST", url)
         }
@@ -626,13 +626,13 @@ pub mod tests {
 
         fn send_get_request(&mut self,
                             url: &str,
-                            args: &APIArguments) -> Result<APIResponse> {
+                            args: APIArguments) -> Result<APIResponse> {
             self.conn.borrow_mut().send_get_request(url, args)
         }
 
         fn send_post_request(&mut self,
                             url: &str,
-                            args: &APIArguments) -> Result<APIResponse> {
+                            args: APIArguments) -> Result<APIResponse> {
             self.conn.borrow_mut().send_post_request(url, args)
         }
     }
@@ -1041,7 +1041,7 @@ pub mod tests {
 
         let response = wrapper.send_post_request(
             "https://retdec.com/service/api/fileinfo/analyses",
-            &APIArguments::new()
+            APIArguments::new()
         );
 
         assert!(response.is_ok());
@@ -1091,7 +1091,7 @@ pub mod tests {
 
         let response = wrapper.send_post_request(
             "https://retdec.com/service/api/XYZ",
-            &APIArguments::new()
+            APIArguments::new()
         );
 
         let err = response.err()

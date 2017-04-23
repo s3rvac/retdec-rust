@@ -52,7 +52,7 @@ impl Decompiler {
         let mut conn = self.conn_factory.new_connection();
         let url = format!("{}/decompiler/decompilations", conn.api_url());
         let api_args = self.create_api_args(args)?;
-        let response = conn.send_post_request(&url, &api_args)
+        let response = conn.send_post_request(&url, api_args)
             .chain_err(|| "failed to start a decompilation")?;
         let id = response.json_value_as_string("id")
             .ok_or(format!("{} returned invalid JSON response", url))?;
