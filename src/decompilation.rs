@@ -32,15 +32,15 @@ impl DecompilationArguments {
         DecompilationArguments::default()
     }
 
-    /// Sets the file to be analyzed.
+    /// Sets the file to be decompiled.
     ///
-    /// This parameter is required. Without it, there is nothing to analyze.
+    /// This parameter is required. Without it, there is nothing to decompile.
     pub fn with_input_file(mut self, input_file: File) -> Self {
         self.input_file = Some(input_file);
         self
     }
 
-    /// Returns the the file to be analyzed.
+    /// Returns the the file to be decompiled.
     pub fn input_file(&self) -> Option<&File> {
         self.input_file.as_ref()
     }
@@ -90,7 +90,7 @@ impl Decompilation {
             self.resource.wait_for(Duration::from_millis(500));
 
             self.resource.update_status()
-                .chain_err(|| "failed to update analysis status")?;
+                .chain_err(|| "failed to update decompilation status")?;
             if self.finished() {
                 break;
             }
