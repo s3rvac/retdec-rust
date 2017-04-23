@@ -58,7 +58,7 @@ impl AnalysisArguments {
         self
     }
 
-    /// Returns the currently set output format.
+    /// Returns the output format.
     pub fn output_format(&self) -> Option<&String> {
         self.output_format.as_ref()
     }
