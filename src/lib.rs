@@ -46,6 +46,7 @@ pub mod analysis;
 pub mod decompilation;
 pub mod decompiler;
 pub mod error;
+pub mod file;
 pub mod fileinfo;
 pub mod settings;
 pub mod tools;
