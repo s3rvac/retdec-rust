@@ -8,7 +8,7 @@ use error::Result;
 use error::ResultExt;
 
 /// In-memory representation of a file.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub struct File {
     content: Vec<u8>,
     name: String,

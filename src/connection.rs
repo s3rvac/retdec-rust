@@ -22,7 +22,7 @@ use settings::Settings;
 use utils::current_platform_name;
 
 /// Response from `retdec.com`'s API.
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default)]
 pub struct APIResponse {
     status_code: u16,
     status_message: String,
@@ -130,7 +130,7 @@ impl APIResponse {
 }
 
 /// Arguments passed to the `retdec.com`s API via GET/HTTP requests.
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default)]
 pub struct APIArguments {
     args: HashMap<String, String>,
     files: HashMap<String, File>,
@@ -206,6 +206,25 @@ impl APIArguments {
     /// Returns an iterator over files (`name` => `file`).
     pub fn files(&self) -> ArgIter<String, File> {
         self.files.iter()
+    }
+}
+
+// Use a custom implementation of PartialEq instead of an automatically derived
+// one so we do not have to derive PartialEq for structs for which this does
+// not make sense (e.g. File).
+impl PartialEq for APIArguments {
+    fn eq(&self, other: &APIArguments) -> bool {
+        if self.args != other.args {
+            return false;
+        }
+
+        for ((k1, f1), (k2, f2)) in self.files.iter().zip(other.files.iter()) {
+            if k1 != k2 || f1.name() != f2.name() || f1.content() != f2.content() {
+                return false;
+            }
+        }
+
+        self.files.len() == other.files.len()
     }
 }
 
@@ -970,10 +989,7 @@ pub mod tests {
 
         args.add_file("input", File::from_content_with_name(b"content", "file.exe"));
 
-        assert_eq!(
-            args.get_file("input"),
-            Some(&File::from_content_with_name(b"content", "file.exe"))
-        );
+        assert_eq!(args.get_file("input").unwrap().name(), "file.exe");
     }
 
     #[test]
@@ -985,7 +1001,7 @@ pub mod tests {
         let files: Vec<(&String, &File)> = args.files().collect();
         assert_eq!(files.len(), 1);
         assert_eq!(*files[0].0, "input".to_string());
-        assert_eq!(*files[0].1, File::from_content_with_name(b"content", "file.exe"));
+        assert_eq!(files[0].1.name(), "file.exe");
     }
 
     #[test]
