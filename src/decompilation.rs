@@ -44,6 +44,11 @@ impl DecompilationArguments {
     pub fn input_file(&self) -> Option<&File> {
         self.input_file.as_ref()
     }
+
+    /// Takes ownership of the input file and sets it to `None`.
+    pub fn take_input_file(&mut self) -> Option<File> {
+        self.input_file.take()
+    }
 }
 
 /// Decompilation from the decompiler service.

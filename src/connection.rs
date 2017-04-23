@@ -151,11 +151,11 @@ impl APIArguments {
     }
 
     /// Adds a new string argument (`"name=value"`) if `value` is not `None`.
-    pub fn add_opt_string_arg<N>(&mut self, name: N, value: Option<&String>)
+    pub fn add_opt_string_arg<N>(&mut self, name: N, value: Option<String>)
         where N: Into<String>
     {
         if let Some(value) = value {
-            self.args.insert(name.into(), value.to_string());
+            self.args.insert(name.into(), value);
         }
     }
 
@@ -921,7 +921,7 @@ pub mod tests {
     fn api_arguments_add_opt_string_arg_adds_string_argument_when_some() {
         let mut args = APIArguments::new();
 
-        args.add_opt_string_arg("name", Some(&"value".to_string()));
+        args.add_opt_string_arg("name", Some("value".to_string()));
 
         assert_eq!(args.get_arg("name"), Some(&"value".to_string()));
     }

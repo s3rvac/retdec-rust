@@ -59,13 +59,13 @@ impl Fileinfo {
         Ok(Analysis::new(id, conn))
     }
 
-    fn create_api_args(&self, args: AnalysisArguments) -> Result<APIArguments> {
+    fn create_api_args(&self, mut args: AnalysisArguments) -> Result<APIArguments> {
         let mut api_args = APIArguments::new();
-        api_args.add_opt_string_arg("output_format", args.output_format());
+        api_args.add_opt_string_arg("output_format", args.take_output_format());
         api_args.add_opt_bool_arg("verbose", args.verbose());
-        match args.input_file() {
+        match args.take_input_file() {
             Some(input_file) => {
-                api_args.add_file("input", input_file.clone());
+                api_args.add_file("input", input_file);
             }
             None => {
                 bail!("no input file given");

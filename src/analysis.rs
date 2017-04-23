@@ -73,6 +73,16 @@ impl AnalysisArguments {
     pub fn input_file(&self) -> Option<&File> {
         self.input_file.as_ref()
     }
+
+    /// Takes ownership of the output format and sets it to `None`.
+    pub fn take_output_format(&mut self) -> Option<String> {
+        self.output_format.take()
+    }
+
+    /// Takes ownership of the input file and sets it to `None`.
+    pub fn take_input_file(&mut self) -> Option<File> {
+        self.input_file.take()
+    }
 }
 
 /// Analysis from the fileinfo service.

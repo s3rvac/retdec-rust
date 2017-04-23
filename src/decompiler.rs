@@ -59,12 +59,12 @@ impl Decompiler {
         Ok(Decompilation::new(id, conn))
     }
 
-    fn create_api_args(&self, args: DecompilationArguments) -> Result<APIArguments> {
+    fn create_api_args(&self, mut args: DecompilationArguments) -> Result<APIArguments> {
         let mut api_args = APIArguments::new();
         api_args.add_string_arg("mode", "bin");
-        match args.input_file() {
+        match args.take_input_file() {
             Some(input_file) => {
-                api_args.add_file("input", input_file.clone());
+                api_args.add_file("input", input_file);
             }
             None => {
                 bail!("no input file given");
