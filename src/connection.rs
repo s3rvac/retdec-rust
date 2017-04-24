@@ -8,9 +8,9 @@ use std::str;
 use hyper::Url as HyperUrl;
 use hyper::client::request::Request as HyperRequest;
 use hyper::client::response::Response as HyperResponse;
-use hyper::header;
 use hyper::method::Method as HyperMethod;
 use hyper::net::Fresh;
+use hyper;
 use json::JsonValue;
 use json;
 use multipart::client::Multipart;
@@ -355,8 +355,8 @@ impl HyperAPIConnection {
         // be passed as 'username' in HTTP Basic Auth. The 'password' part
         // should be left empty.
         // https://retdec.com/api/docs/essential_information.html#authentication
-        let auth = header::Authorization(
-            header::Basic {
+        let auth = hyper::header::Authorization(
+            hyper::header::Basic {
                 username: self.settings.api_key()
                     .map(|k| k.clone())
                     .ok_or("missing API key")?,
@@ -369,7 +369,7 @@ impl HyperAPIConnection {
 
     fn add_user_agent_to_request(&self, request: &mut HyperRequest<Fresh>) {
         let user_agent = format!("retdec-rust/{}", current_platform_name());
-        request.headers_mut().set(header::UserAgent(user_agent));
+        request.headers_mut().set(hyper::header::UserAgent(user_agent));
     }
 
     fn parse_response(&self, mut response: HyperResponse) -> Result<APIResponse> {
