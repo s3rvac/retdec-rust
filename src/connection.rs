@@ -21,11 +21,42 @@ use file::File;
 use settings::Settings;
 use utils::current_platform_name;
 
+/// A single HTTP header field.
+#[derive(Clone, Debug, Default)]
+struct Header {
+    pub name: String,
+    pub value: String,
+}
+
+/// HTTP headers.
+#[derive(Clone, Debug, Default)]
+struct Headers {
+    headers: Vec<Header>,
+}
+
+impl Headers {
+    /// Adds the given header into the headers.
+    pub fn add(&mut self, header: Header) {
+        self.headers.push(header);
+    }
+
+    /// Returns the first value of a header with the given name.
+    pub fn first_value_for<'a>(&'a self, name: &str) -> Option<&'a str> {
+        for header in self.headers.iter() {
+            if header.name == name {
+                return Some(&header.value);
+            }
+        }
+        None
+    }
+}
+
 /// Response from `retdec.com`'s API.
 #[derive(Clone, Debug, Default)]
 pub struct APIResponse {
     status_code: u16,
     status_message: String,
+    headers: Headers,
     body: Vec<u8>,
 }
 
@@ -380,8 +411,20 @@ impl HyperAPIConnection {
         Ok(APIResponse {
             status_code: raw_status.0,
             status_message: raw_status.1.clone().into_owned(),
+            headers: self.parse_headers(&response.headers),
             body: body,
         })
+    }
+
+    fn parse_headers(&self, headers: &hyper::header::Headers) -> Headers {
+        let mut parsed_headers = Headers::default();
+        for header in headers.iter() {
+            parsed_headers.add(Header {
+                name: header.name().to_string(),
+                value: header.value_string(),
+            });
+        }
+        parsed_headers
     }
 }
 
@@ -690,6 +733,18 @@ pub mod tests {
             self
         }
 
+        /// Adds an HTTP header to the response.
+        pub fn with_header<N, V>(mut self, name: N, value: V) -> Self
+            where N: Into<String>,
+                  V: Into<String>
+        {
+            self.response.headers.add(Header {
+                name: name.into(),
+                value: value.into(),
+            });
+            self
+        }
+
         /// Sets the body of the response.
         pub fn with_body(mut self, new_body: &[u8]) -> Self {
             self.response.body = new_body.to_vec();
@@ -707,6 +762,7 @@ pub mod tests {
         let r = APIResponse {
             status_code: 200,
             status_message: "OK".into(),
+            headers: Headers::default(),
             body: "Hello!".into(),
         };
 
