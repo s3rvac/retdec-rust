@@ -35,6 +35,7 @@
 extern crate clap;
 extern crate hyper;
 extern crate json;
+extern crate regex;
 extern crate multipart;
 #[macro_use]
 extern crate error_chain;

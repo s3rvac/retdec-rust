@@ -14,6 +14,7 @@ use hyper;
 use json::JsonValue;
 use json;
 use multipart::client::Multipart;
+use regex::Regex;
 
 use error::Result;
 use error::ResultExt;
@@ -157,6 +158,29 @@ impl APIResponse {
             }
         }
         None
+    }
+
+    /// Returns the body of the response as a file.
+    ///
+    /// Only works when the response is a file.
+    pub fn body_as_file(&self) -> Result<File> {
+        // File responses contain the Content-Disposition header, which
+        // includes the name of the file. Example:
+        //
+        //     Content-Disposition: attachment; filename=file.txt
+        //
+        // https://retdec.com/api/docs/essential_information.html#id3
+        let content_disposition = self.headers.first_value_for("Content-Disposition");
+        if let Some(content_disposition) = content_disposition {
+            let filename_regex = Regex::new(r"^attachment; filename=(.+)$").unwrap();
+            if let Some(captures) = filename_regex.captures(content_disposition) {
+                if let Some(filename) = captures.get(1) {
+                    return Ok(File::from_content_with_name(self.body(), filename.as_str()));
+                }
+            }
+        }
+
+        bail!("response does not contain a file");
     }
 }
 
@@ -962,6 +986,18 @@ pub mod tests {
             .build();
 
         assert_eq!(r.json_value_as_bool("key"), None);
+    }
+
+    #[test]
+    fn api_response_body_as_file_returns_correct_file_when_response_is_file() {
+        let r = APIResponseBuilder::new()
+            .with_header("Content-Disposition", "attachment; filename=file.txt")
+            .with_body(b"content")
+            .build();
+
+        let file = r.body_as_file().expect("expected a file to be returned");
+        assert_eq!(file.name(), "file.txt");
+        assert_eq!(file.content(), b"content");
     }
 
     #[test]
