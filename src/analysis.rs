@@ -150,6 +150,19 @@ impl Analysis {
         response.body_as_string()
     }
 
+    /// Returns the output from the analysis as a file.
+    ///
+    /// The format of the output depends on the format selected when starting
+    /// an analysis (`output_format`).
+    ///
+    /// Accesses the API.
+    pub fn get_output_as_file(&mut self) -> Result<File> {
+        self.ensure_analysis_succeeded()?;
+        let output_url = format!("{}/output", self.resource.base_url);
+        let response = self.resource.conn.send_get_request_without_args(&output_url)?;
+        response.body_as_file()
+    }
+
     fn ensure_analysis_succeeded(&self) -> Result<()> {
         self.resource.ensure_succeeded("analysis")
     }
