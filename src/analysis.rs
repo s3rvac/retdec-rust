@@ -3,6 +3,7 @@
 use std::time::Duration;
 
 use connection::APIConnection;
+use connection::APIResponse;
 use error::Result;
 use error::ResultExt;
 use file::File;
@@ -144,9 +145,7 @@ impl Analysis {
     ///
     /// Accesses the API.
     pub fn get_output(&mut self) -> Result<String> {
-        self.ensure_analysis_succeeded()?;
-        let output_url = format!("{}/output", self.resource.base_url);
-        let response = self.resource.conn.send_get_request_without_args(&output_url)?;
+        let response = self.get_output_response()?;
         response.body_as_string()
     }
 
@@ -157,10 +156,14 @@ impl Analysis {
     ///
     /// Accesses the API.
     pub fn get_output_as_file(&mut self) -> Result<File> {
+        let response = self.get_output_response()?;
+        response.body_as_file()
+    }
+
+    fn get_output_response(&mut self) -> Result<APIResponse> {
         self.ensure_analysis_succeeded()?;
         let output_url = format!("{}/output", self.resource.base_url);
-        let response = self.resource.conn.send_get_request_without_args(&output_url)?;
-        response.body_as_file()
+        self.resource.conn.send_get_request_without_args(&output_url)
     }
 
     fn ensure_analysis_succeeded(&self) -> Result<()> {
