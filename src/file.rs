@@ -113,12 +113,7 @@ impl File {
     pub fn save_into<P>(&self, dir: P) -> Result<PathBuf>
         where P: AsRef<Path>
     {
-        let file_path = dir.as_ref().join(self.name());
-        let mut file = fs::File::create(&file_path)
-            .chain_err(|| format!("failed to open {:?} for writing", file_path))?;
-        file.write(self.content())
-            .chain_err(|| format!("failed to write content into {:?}", file_path))?;
-        Ok(file_path)
+        self.save_into_under_name(dir, self.name())
     }
 
     /// Stores a copy of the file into the given directory under a custom name.
@@ -128,10 +123,7 @@ impl File {
         where P: AsRef<Path>
     {
         let file_path = dir.as_ref().join(name);
-        let mut file = fs::File::create(&file_path)
-            .chain_err(|| format!("failed to open {:?} for writing", file_path))?;
-        file.write(self.content())
-            .chain_err(|| format!("failed to write content into {:?}", file_path))?;
+        Self::write_file(self.content(), &file_path)?;
         Ok(file_path)
     }
 
@@ -142,6 +134,14 @@ impl File {
         file.read_to_end(&mut content)
             .chain_err(|| format!("failed to read {:?}", path))?;
         Ok(content)
+    }
+
+    fn write_file(content: &[u8], path: &Path) -> Result<()> {
+        let mut file = fs::File::create(path)
+            .chain_err(|| format!("failed to open {:?} for writing", path))?;
+        file.write(content)
+            .chain_err(|| format!("failed to write content into {:?}", path))?;
+        Ok(())
     }
 
     fn get_file_name(path: &Path) -> Result<String> {
