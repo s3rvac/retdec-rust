@@ -103,10 +103,12 @@ impl Decompilation {
         Ok(())
     }
 
-    /// Returns the content of the output HLL file (e.g. C code).
+    /// Returns the output code in the target high-level language (HLL).
+    ///
+    /// The HLL type (C, Python') depends on the used decompilation arguments.
     ///
     /// This function should be called only after the decompilation has
-    /// finished.
+    /// successfully finished.
     ///
     /// Accesses the API.
     pub fn get_output_hll_code(&mut self) -> Result<String> {
