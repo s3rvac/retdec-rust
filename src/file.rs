@@ -3,6 +3,7 @@
 use std::fs;
 use std::io::Read;
 use std::path::Path;
+use std::str;
 
 use error::Result;
 use error::ResultExt;
@@ -80,9 +81,18 @@ impl File {
         }
     }
 
-    /// Returns the content of the file.
+    /// Returns the raw content of the file.
     pub fn content(&self) -> &[u8] {
         &self.content
+    }
+
+    /// Returns the content of the file as text.
+    ///
+    /// The content is expected to be encoded as UTF-8, which is the encoding
+    /// that `retdec.com`'s API uses.
+    pub fn content_as_text(&self) -> Result<&str> {
+        str::from_utf8(&self.content)
+            .chain_err(|| "failed to parse file content as UTF-8")
     }
 
     /// Returns the name of the file.
@@ -120,5 +130,22 @@ mod tests {
 
         assert_eq!(file.content(), b"content");
         assert_eq!(file.name(), "file.txt");
+    }
+
+    #[test]
+    fn file_content_as_text_returns_str_when_content_is_text() {
+        let file = File::from_content_with_name(b"content", "file.txt");
+
+        let content = file.content_as_text()
+            .expect("expected the content to be text");
+
+        assert_eq!(content, "content");
+    }
+
+    #[test]
+    fn file_content_as_text_returns_error_when_content_is_not_text() {
+        let file = File::from_content_with_name(b"\xc3\x28", "file.txt");
+
+        assert!(file.content_as_text().is_err());
     }
 }
