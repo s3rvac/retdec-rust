@@ -3,6 +3,7 @@
 use std::time::Duration;
 
 use connection::APIConnection;
+use connection::APIResponse;
 use error::Result;
 use error::ResultExt;
 use file::File;
@@ -112,10 +113,28 @@ impl Decompilation {
     ///
     /// Accesses the API.
     pub fn get_output_hll_code(&mut self) -> Result<String> {
-        self.ensure_decompilation_succeeded()?;
-        let output_url = format!("{}/outputs/hll", self.resource.base_url);
-        let response = self.resource.conn.send_get_request_without_args(&output_url)?;
+        let response = self.get_output_response("hll")?;
         response.body_as_string()
+    }
+
+    /// Returns the output code in the target high-level language (HLL) as a
+    /// file.
+    ///
+    /// The HLL type (C, Python') depends on the used decompilation arguments.
+    ///
+    /// This function should be called only after the decompilation has
+    /// successfully finished.
+    ///
+    /// Accesses the API.
+    pub fn get_output_hll_code_as_file(&mut self) -> Result<File> {
+        let response = self.get_output_response("hll")?;
+        response.body_as_file()
+    }
+
+    fn get_output_response(&mut self, output_type: &str) -> Result<APIResponse> {
+        self.ensure_decompilation_succeeded()?;
+        let output_url = format!("{}/outputs/{}", self.resource.base_url, output_type);
+        self.resource.conn.send_get_request_without_args(&output_url)
     }
 
     fn ensure_decompilation_succeeded(&self) -> Result<()> {
