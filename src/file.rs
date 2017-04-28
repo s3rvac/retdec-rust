@@ -2,7 +2,9 @@
 
 use std::fs;
 use std::io::Read;
+use std::io::Write;
 use std::path::Path;
+use std::path::PathBuf;
 use std::str;
 
 use error::Result;
@@ -98,6 +100,20 @@ impl File {
     /// Returns the name of the file.
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    /// Stores a copy of the file into the given directory.
+    ///
+    /// Returns a path to the saved file.
+    pub fn save_into<P>(&self, dir: P) -> Result<PathBuf>
+        where P: AsRef<Path>
+    {
+        let file_path = dir.as_ref().join(self.name());
+        let mut file = fs::File::create(&file_path)
+            .chain_err(|| format!("failed to open {:?} for writing", file_path))?;
+        file.write(self.content())
+            .chain_err(|| format!("failed to write content into {:?}", file_path))?;
+        Ok(file_path)
     }
 
     fn read_file(path: &Path) -> Result<Vec<u8>> {
