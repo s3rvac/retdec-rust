@@ -286,7 +286,7 @@ impl PartialEq for APIArguments {
 /// API connection.
 pub trait APIConnection {
     /// Returns the URL to the API.
-    fn api_url(&self) -> &String;
+    fn api_url(&self) -> &str;
 
     /// Sends an HTTP GET request to the given url with the given arguments.
     fn send_get_request(&mut self,
@@ -331,7 +331,7 @@ impl ResponseVerifyingAPIConnection {
 }
 
 impl APIConnection for ResponseVerifyingAPIConnection {
-    fn api_url(&self) -> &String {
+    fn api_url(&self) -> &str {
         self.conn.api_url()
     }
 
@@ -453,7 +453,7 @@ impl HyperAPIConnection {
 }
 
 impl APIConnection for HyperAPIConnection {
-    fn api_url(&self) -> &String {
+    fn api_url(&self) -> &str {
         self.settings.api_url()
     }
 
@@ -662,7 +662,7 @@ pub mod tests {
     }
 
     impl APIConnection for APIConnectionMock {
-        fn api_url(&self) -> &String {
+        fn api_url(&self) -> &str {
             self.settings.api_url()
         }
 
@@ -687,7 +687,7 @@ pub mod tests {
     }
 
     impl APIConnection for InnerAPIConnectionMock {
-        fn api_url(&self) -> &String {
+        fn api_url(&self) -> &str {
             self.settings.api_url()
         }
 

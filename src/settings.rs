@@ -110,7 +110,7 @@ impl Settings {
     }
 
     /// Returns the API URL.
-    pub fn api_url(&self) -> &String {
+    pub fn api_url(&self) -> &str {
         &self.api_url
     }
 
@@ -159,7 +159,7 @@ mod tests {
                 }
                 assert_eq!(s.api_url(), &api_url)
             }
-            Err(_) => assert_eq!(s.api_url(), &DEFAULT_API_URL),
+            Err(_) => assert_eq!(s.api_url(), DEFAULT_API_URL),
         }
     }
 
@@ -176,7 +176,7 @@ mod tests {
         let mut s = Settings::new();
         s.set_api_url("URL");
 
-        assert_eq!(*s.api_url(), "URL");
+        assert_eq!(s.api_url(), "URL");
     }
 
     #[test]
@@ -184,7 +184,7 @@ mod tests {
         let s = Settings::new()
             .with_api_url(format!("{}/", DEFAULT_API_URL));
 
-        assert_eq!(*s.api_url(), DEFAULT_API_URL);
+        assert_eq!(s.api_url(), DEFAULT_API_URL);
     }
 
     #[test]
@@ -194,6 +194,6 @@ mod tests {
             .with_api_url("URL");
 
         assert_eq!(s.api_key(), Some(&"KEY".to_string()));
-        assert_eq!(*s.api_url(), "URL");
+        assert_eq!(s.api_url(), "URL");
     }
 }
