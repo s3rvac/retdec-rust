@@ -50,8 +50,38 @@ impl Settings {
     ///
     /// Without setting an API key, you will be unable to use any of the
     /// provided services (decompiler, fileinfo).
-    pub fn with_api_key<K: Into<String>>(mut self, new_api_key: K) -> Self {
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use retdec::settings::Settings;
+    ///
+    /// let mut s = Settings::new();
+    /// s.set_api_key("MY-API-KEY");
+    ///
+    /// assert_eq!(s.api_key(), Some(&"MY-API-KEY".to_string()));
+    /// ```
+    pub fn set_api_key<K: Into<String>>(&mut self, new_api_key: K) {
         self.api_key = Some(new_api_key.into());
+    }
+
+    /// Sets an API key when used as a builder.
+    ///
+    /// Without setting an API key, you will be unable to use any of the
+    /// provided services (decompiler, fileinfo).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use retdec::settings::Settings;
+    ///
+    /// let s = Settings::new()
+    ///     .with_api_key("MY-API-KEY");
+    ///
+    /// assert_eq!(s.api_key(), Some(&"MY-API-KEY".to_string()));
+    /// ```
+    pub fn with_api_key<K: Into<String>>(mut self, new_api_key: K) -> Self {
+        self.set_api_key(new_api_key);
         self
     }
 
@@ -59,8 +89,16 @@ impl Settings {
     ///
     /// For public use, the default URL is what you want. This function is only
     /// useful for internal development.
-    pub fn with_api_url<U: Into<String>>(mut self, new_api_url: U) -> Self {
+    pub fn set_api_url<U: Into<String>>(&mut self, new_api_url: U) {
         self.api_url = Self::normalize_api_url(new_api_url.into());
+    }
+
+    /// Sets a custom URL to the API when used as a builder.
+    ///
+    /// For public use, the default URL is what you want. This function is only
+    /// useful for internal development.
+    pub fn with_api_url<U: Into<String>>(mut self, new_api_url: U) -> Self {
+        self.set_api_url(new_api_url);
         self
     }
 
@@ -127,16 +165,16 @@ mod tests {
 
     #[test]
     fn settings_api_key_returns_correct_value_after_being_set() {
-        let s = Settings::new()
-            .with_api_key("KEY");
+        let mut s = Settings::new();
+        s.set_api_key("KEY");
 
         assert_eq!(s.api_key(), Some(&"KEY".to_string()));
     }
 
     #[test]
     fn settings_api_url_returns_correct_value_after_being_set() {
-        let s = Settings::new()
-            .with_api_url("URL");
+        let mut s = Settings::new();
+        s.set_api_url("URL");
 
         assert_eq!(*s.api_url(), "URL");
     }
@@ -150,7 +188,7 @@ mod tests {
     }
 
     #[test]
-    fn settings_can_set_all_attributes_at_once() {
+    fn settings_can_set_all_attributes_at_once_via_with_methods() {
         let s = Settings::new()
             .with_api_key("KEY")
             .with_api_url("URL");

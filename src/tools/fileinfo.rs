@@ -68,10 +68,10 @@ fn run(args: &Vec<String>) -> Result<()> {
 
     let mut settings = Settings::new();
     if let Some(api_key) = args.value_of("api_key") {
-        settings = settings.with_api_key(api_key);
+        settings.set_api_key(api_key);
     }
     if let Some(api_url) = args.value_of("api_url") {
-        settings = settings.with_api_url(api_url);
+        settings.set_api_url(api_url);
     }
     let input_file = args.value_of("FILE").unwrap();
 
