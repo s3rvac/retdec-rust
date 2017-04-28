@@ -11,6 +11,23 @@ use error::Result;
 use error::ResultExt;
 
 /// In-memory representation of a file.
+///
+/// Only the name and content of a file are accessible. Path to the file is not
+/// stored.
+///
+/// # Examples
+///
+/// ```no_run
+/// use std::path::Path;
+/// use retdec::file::File;
+///
+/// let file = File::from_path("tests/file.exe").unwrap();
+///
+/// assert_eq!(file.name(), "file.exe");
+///
+/// let saved_file_path = file.save_into("another_dir").unwrap();
+/// assert_eq!(saved_file_path, Path::new("another_dir/file.exe"));
+/// ```
 #[derive(Clone, Debug)]
 pub struct File {
     content: Vec<u8>,
@@ -84,6 +101,16 @@ impl File {
     }
 
     /// Returns the raw content of the file.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use retdec::file::File;
+    ///
+    /// let file = File::from_content_with_name(b"content", "file.txt");
+    ///
+    /// assert_eq!(file.content(), b"content");
+    /// ```
     pub fn content(&self) -> &[u8] {
         &self.content
     }
@@ -92,17 +119,47 @@ impl File {
     ///
     /// The content is expected to be encoded as UTF-8, which is the encoding
     /// that `retdec.com`'s API uses.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use retdec::file::File;
+    ///
+    /// let file = File::from_content_with_name(b"content", "file.txt");
+    ///
+    /// assert_eq!(file.content_as_text().unwrap(), "content");
+    /// ```
     pub fn content_as_text(&self) -> Result<&str> {
         str::from_utf8(&self.content)
             .chain_err(|| "failed to parse file content as UTF-8")
     }
 
     /// Returns the number of bytes in the content.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use retdec::file::File;
+    ///
+    /// let file = File::from_content_with_name(b"content", "file.txt");
+    ///
+    /// assert_eq!(file.content_len(), 7);
+    /// ```
     pub fn content_len(&self) -> usize {
         self.content.len()
     }
 
     /// Returns the name of the file.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use retdec::file::File;
+    ///
+    /// let file = File::from_content_with_name(b"content", "file.txt");
+    ///
+    /// assert_eq!(file.name(), "file.txt");
+    /// ```
     pub fn name(&self) -> &str {
         &self.name
     }
@@ -110,6 +167,18 @@ impl File {
     /// Stores a copy of the file into the given directory.
     ///
     /// Returns a path to the saved file.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use std::path::Path;
+    /// use retdec::file::File;
+    ///
+    /// let file = File::from_path("tests/file.exe").unwrap();
+    ///
+    /// let saved_file_path = file.save_into("another_dir").unwrap();
+    /// assert_eq!(saved_file_path, Path::new("another_dir/file.exe"));
+    /// ```
     pub fn save_into<P>(&self, dir: P) -> Result<PathBuf>
         where P: AsRef<Path>
     {
@@ -119,6 +188,18 @@ impl File {
     /// Stores a copy of the file into the given directory under a custom name.
     ///
     /// Returns a path to the saved file.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use std::path::Path;
+    /// use retdec::file::File;
+    ///
+    /// let file = File::from_path("tests/file.exe").unwrap();
+    ///
+    /// let saved_file_path = file.save_into_under_name("another_dir", "test.exe").unwrap();
+    /// assert_eq!(saved_file_path, Path::new("another_dir/test.exe"));
+    /// ```
     pub fn save_into_under_name<P>(&self, dir: P, name: &str) -> Result<PathBuf>
         where P: AsRef<Path>
     {
@@ -131,6 +212,16 @@ impl File {
     ///
     /// The path is expected to be a file path. If you want to store the file
     /// into a directory, use either `save_into()` or `save_into_under_name()`.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use retdec::file::File;
+    ///
+    /// let file = File::from_path("tests/file.exe").unwrap();
+    ///
+    /// file.save_as("another_dir/test.exe").unwrap();
+    /// ```
     pub fn save_as<P>(&self, path: P) -> Result<()>
         where P: AsRef<Path>
     {
