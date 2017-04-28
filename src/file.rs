@@ -121,6 +121,20 @@ impl File {
         Ok(file_path)
     }
 
+    /// Stores a copy of the file into the given directory under a custom name.
+    ///
+    /// Returns a path to the saved file.
+    pub fn save_into_under_name<P>(&self, dir: P, name: &str) -> Result<PathBuf>
+        where P: AsRef<Path>
+    {
+        let file_path = dir.as_ref().join(name);
+        let mut file = fs::File::create(&file_path)
+            .chain_err(|| format!("failed to open {:?} for writing", file_path))?;
+        file.write(self.content())
+            .chain_err(|| format!("failed to write content into {:?}", file_path))?;
+        Ok(file_path)
+    }
+
     fn read_file(path: &Path) -> Result<Vec<u8>> {
         let mut file = fs::File::open(path)
             .chain_err(|| format!("failed to open {:?}", path))?;

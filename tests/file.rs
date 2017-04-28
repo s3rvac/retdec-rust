@@ -45,3 +45,18 @@ fn file_save_into_stores_file_into_given_directory() {
         .expect("failed to read the stored file");
     assert_eq!(file.content(), b"content");
 }
+
+#[test]
+fn file_save_into_under_name_stores_file_into_given_directory_under_given_name() {
+    let file = File::from_content_with_name(b"content", "file.txt");
+    let tmp_dir = TempDir::new("retdec-file-test")
+        .expect("failed to create a temporary directory");
+
+    let file_path = file.save_into_under_name(tmp_dir.path(), "new-file.txt")
+        .expect("failed to save the file");
+
+    let file = File::from_path(file_path)
+        .expect("failed to read the stored file");
+    assert_eq!(file.name(), "new-file.txt");
+    assert_eq!(file.content(), b"content");
+}
