@@ -97,6 +97,11 @@ impl File {
             .chain_err(|| "failed to parse file content as UTF-8")
     }
 
+    /// Returns the number of bytes in the content.
+    pub fn content_len(&self) -> usize {
+        self.content.len()
+    }
+
     /// Returns the name of the file.
     pub fn name(&self) -> &str {
         &self.name
@@ -163,5 +168,12 @@ mod tests {
         let file = File::from_content_with_name(b"\xc3\x28", "file.txt");
 
         assert!(file.content_as_text().is_err());
+    }
+
+    #[test]
+    fn file_content_len_returns_correct_value() {
+        let file = File::from_content_with_name(b"123456", "file.txt");
+
+        assert_eq!(file.content_len(), 6);
     }
 }
