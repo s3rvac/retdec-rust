@@ -127,6 +127,17 @@ impl File {
         Ok(file_path)
     }
 
+    /// Stores a copy of the file into the given path.
+    ///
+    /// The path is expected to be a file path. If you want to store the file
+    /// into a directory, use either `save_into()` or `save_into_under_name()`.
+    pub fn save_as<P>(&self, path: P) -> Result<()>
+        where P: AsRef<Path>
+    {
+        Self::write_file(self.content(), path.as_ref())?;
+        Ok(())
+    }
+
     fn read_file(path: &Path) -> Result<Vec<u8>> {
         let mut file = fs::File::open(path)
             .chain_err(|| format!("failed to open {:?}", path))?;
