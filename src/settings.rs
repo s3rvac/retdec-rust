@@ -18,7 +18,7 @@ const DEFAULT_API_URL: &'static str = "https://retdec.com/service/api";
 /// let s = Settings::new()
 ///     .with_api_key("MY-API-KEY");
 ///
-/// assert_eq!(s.api_key(), Some(&"MY-API-KEY".to_string()));
+/// assert_eq!(s.api_key(), Some("MY-API-KEY"));
 /// ```
 #[derive(Debug, Clone)]
 pub struct Settings {
@@ -59,7 +59,7 @@ impl Settings {
     /// let mut s = Settings::new();
     /// s.set_api_key("MY-API-KEY");
     ///
-    /// assert_eq!(s.api_key(), Some(&"MY-API-KEY".to_string()));
+    /// assert_eq!(s.api_key(), Some("MY-API-KEY"));
     /// ```
     pub fn set_api_key<K: Into<String>>(&mut self, new_api_key: K) {
         self.api_key = Some(new_api_key.into());
@@ -78,7 +78,7 @@ impl Settings {
     /// let s = Settings::new()
     ///     .with_api_key("MY-API-KEY");
     ///
-    /// assert_eq!(s.api_key(), Some(&"MY-API-KEY".to_string()));
+    /// assert_eq!(s.api_key(), Some("MY-API-KEY"));
     /// ```
     pub fn with_api_key<K: Into<String>>(mut self, new_api_key: K) -> Self {
         self.set_api_key(new_api_key);
@@ -105,8 +105,8 @@ impl Settings {
     /// Returns the API key.
     ///
     /// If no API key was set, it returns `None`.
-    pub fn api_key(&self) -> Option<&String> {
-        self.api_key.as_ref()
+    pub fn api_key(&self) -> Option<&str> {
+        self.api_key.as_ref().map(String::as_str)
     }
 
     /// Returns the API URL.
@@ -149,7 +149,7 @@ mod tests {
 
         // The default values depend on the presence of environment variables.
         match env::var("RETDEC_API_KEY") {
-            Ok(api_key) => assert_eq!(s.api_key(), Some(&api_key)),
+            Ok(api_key) => assert_eq!(s.api_key(), Some(api_key.as_str())),
             Err(_) => assert!(s.api_key().is_none()),
         }
         match env::var("RETDEC_API_URL") {
@@ -168,7 +168,7 @@ mod tests {
         let mut s = Settings::new();
         s.set_api_key("KEY");
 
-        assert_eq!(s.api_key(), Some(&"KEY".to_string()));
+        assert_eq!(s.api_key(), Some("KEY"));
     }
 
     #[test]
@@ -193,7 +193,7 @@ mod tests {
             .with_api_key("KEY")
             .with_api_url("URL");
 
-        assert_eq!(s.api_key(), Some(&"KEY".to_string()));
+        assert_eq!(s.api_key(), Some("KEY"));
         assert_eq!(s.api_url(), "URL");
     }
 }

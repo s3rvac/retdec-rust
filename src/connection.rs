@@ -413,7 +413,7 @@ impl HyperAPIConnection {
         let auth = hyper::header::Authorization(
             hyper::header::Basic {
                 username: self.settings.api_key()
-                    .map(|k| k.clone())
+                    .map(|k| k.to_string())
                     .ok_or("missing API key")?,
                 password: None
             }
