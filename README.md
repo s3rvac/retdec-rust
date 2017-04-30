@@ -40,3 +40,15 @@ Licensed under either of
   or http://opensource.org/licenses/MIT)
 
 at your option.
+
+## Access from Other Languages
+
+If you want to access the [retdec.com](https://retdec.com) decompilation
+service from other languages, check out the following projects:
+
+* [retdec-cpp](https://github.com/s3rvac/retdec-cpp) - A library and tools for
+  accessing the service from C++.
+* [retdec-python](https://github.com/s3rvac/retdec-python) - A library and
+  tools for accessing the service from Python.
+* [retdec-sh](https://github.com/s3rvac/retdec-sh) - Scripts for accessing the
+  service from shell.
