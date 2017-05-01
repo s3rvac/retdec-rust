@@ -37,8 +37,15 @@ impl DecompilationArguments {
     ///
     /// This parameter is required. Without it, there is nothing to decompile.
     pub fn with_input_file(mut self, input_file: File) -> Self {
-        self.input_file = Some(input_file);
+        self.set_input_file(input_file);
         self
+    }
+
+    /// Sets the file to be analyzed.
+    ///
+    /// This parameter is required. Without it, there is nothing to analyze.
+    pub fn set_input_file(&mut self, input_file: File) {
+        self.input_file = Some(input_file);
     }
 
     /// Returns the the file to be decompiled.
