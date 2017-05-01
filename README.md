@@ -15,7 +15,7 @@ Currently, the only way of using the library and tools is to specify the
 dependency from this git repository. To do that, add the following lines into
 your `Cargo.toml` file:
 
-```
+```text
 [dependencies]
 retdec = { git = "https://github.com/s3rvac/retdec-rust" }
 ```
