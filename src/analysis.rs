@@ -38,7 +38,9 @@ impl AnalysisArguments {
     /// Sets the format of the output from the analysis.
     ///
     /// Available values are: `plain` (default), `json`.
-    pub fn with_output_format(mut self, output_format: &str) -> Self {
+    pub fn with_output_format<F>(mut self, output_format: F) -> Self
+        where F: Into<String>
+    {
         self.set_output_format(output_format);
         self
     }
@@ -62,8 +64,10 @@ impl AnalysisArguments {
     /// Sets the format of the output from the analysis.
     ///
     /// Available values are: `plain` (default), `json`.
-    pub fn set_output_format(&mut self, output_format: &str) {
-        self.output_format = Some(output_format.to_string());
+    pub fn set_output_format<F>(&mut self, output_format: F)
+        where F: Into<String>
+    {
+        self.output_format = Some(output_format.into());
     }
 
     /// Should the analysis return all available information about the file?
