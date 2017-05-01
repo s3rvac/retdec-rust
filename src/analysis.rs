@@ -39,7 +39,7 @@ impl AnalysisArguments {
     ///
     /// Available values are: `plain` (default), `json`.
     pub fn with_output_format(mut self, output_format: &str) -> Self {
-        self.output_format = Some(output_format.to_string());
+        self.set_output_format(output_format);
         self
     }
 
@@ -47,7 +47,7 @@ impl AnalysisArguments {
     ///
     /// By default, the analysis returns only an abridged version.
     pub fn with_verbose(mut self, verbose: bool) -> Self {
-        self.verbose = Some(verbose);
+        self.set_verbose(verbose);
         self
     }
 
@@ -55,8 +55,29 @@ impl AnalysisArguments {
     ///
     /// This parameter is required. Without it, there is nothing to analyze.
     pub fn with_input_file(mut self, input_file: File) -> Self {
-        self.input_file = Some(input_file);
+        self.set_input_file(input_file);
         self
+    }
+
+    /// Sets the format of the output from the analysis.
+    ///
+    /// Available values are: `plain` (default), `json`.
+    pub fn set_output_format(&mut self, output_format: &str) {
+        self.output_format = Some(output_format.to_string());
+    }
+
+    /// Should the analysis return all available information about the file?
+    ///
+    /// By default, the analysis returns only an abridged version.
+    pub fn set_verbose(&mut self, verbose: bool) {
+        self.verbose = Some(verbose);
+    }
+
+    /// Sets the file to be analyzed.
+    ///
+    /// This parameter is required. Without it, there is nothing to analyze.
+    pub fn set_input_file(&mut self, input_file: File) {
+        self.input_file = Some(input_file);
     }
 
     /// Returns the output format.
