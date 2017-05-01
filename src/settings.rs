@@ -46,25 +46,6 @@ impl Settings {
         }
     }
 
-    /// Sets an API key.
-    ///
-    /// Without setting an API key, you will be unable to use any of the
-    /// provided services (decompiler, fileinfo).
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use retdec::settings::Settings;
-    ///
-    /// let mut s = Settings::new();
-    /// s.set_api_key("MY-API-KEY");
-    ///
-    /// assert_eq!(s.api_key(), Some("MY-API-KEY"));
-    /// ```
-    pub fn set_api_key<K: Into<String>>(&mut self, new_api_key: K) {
-        self.api_key = Some(new_api_key.into());
-    }
-
     /// Sets an API key when used as a builder.
     ///
     /// Without setting an API key, you will be unable to use any of the
@@ -85,14 +66,6 @@ impl Settings {
         self
     }
 
-    /// Sets a custom URL to the API.
-    ///
-    /// For public use, the default URL is what you want. This function is only
-    /// useful for internal development.
-    pub fn set_api_url<U: Into<String>>(&mut self, new_api_url: U) {
-        self.api_url = Self::normalize_api_url(new_api_url.into());
-    }
-
     /// Sets a custom URL to the API when used as a builder.
     ///
     /// For public use, the default URL is what you want. This function is only
@@ -100,6 +73,33 @@ impl Settings {
     pub fn with_api_url<U: Into<String>>(mut self, new_api_url: U) -> Self {
         self.set_api_url(new_api_url);
         self
+    }
+
+    /// Sets an API key.
+    ///
+    /// Without setting an API key, you will be unable to use any of the
+    /// provided services (decompiler, fileinfo).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use retdec::settings::Settings;
+    ///
+    /// let mut s = Settings::new();
+    /// s.set_api_key("MY-API-KEY");
+    ///
+    /// assert_eq!(s.api_key(), Some("MY-API-KEY"));
+    /// ```
+    pub fn set_api_key<K: Into<String>>(&mut self, new_api_key: K) {
+        self.api_key = Some(new_api_key.into());
+    }
+
+    /// Sets a custom URL to the API.
+    ///
+    /// For public use, the default URL is what you want. This function is only
+    /// useful for internal development.
+    pub fn set_api_url<U: Into<String>>(&mut self, new_api_url: U) {
+        self.api_url = Self::normalize_api_url(new_api_url.into());
     }
 
     /// Returns the API key.
