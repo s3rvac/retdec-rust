@@ -120,6 +120,7 @@ impl Analysis {
     /// Creates access to an analysis with the given ID.
     ///
     /// Only for internal use.
+    #[doc(hidden)]
     pub fn new<I: Into<String>>(id: I, conn: Box<APIConnection>) -> Self {
         Analysis {
             resource: Resource::new("fileinfo", "analyses", id, conn)

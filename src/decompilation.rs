@@ -68,6 +68,7 @@ impl Decompilation {
     /// Creates access to an decompilation with the given ID.
     ///
     /// Only for internal use.
+    #[doc(hidden)]
     pub fn new<I: Into<String>>(id: I, conn: Box<APIConnection>) -> Self {
         Decompilation {
             resource: Resource::new("decompiler", "decompilations", id, conn)
