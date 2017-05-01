@@ -17,3 +17,6 @@ regex = "0.2.1"
 
 [dev-dependencies]
 tempdir = "0.3.5"
+
+[profile.release]
+debug = true
