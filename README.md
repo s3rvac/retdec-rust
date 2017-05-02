@@ -9,10 +9,7 @@ You can either incorporate the library in your own tools:
 ```rust
 extern crate retdec;
 
-use retdec::decompilation::DecompilationArguments;
-use retdec::decompiler::Decompiler;
-use retdec::file::File;
-use retdec::settings::Settings;
+use retdec::{Decompiler, DecompilationArguments, File, Settings};
 
 let decompiler = Decompiler::new(
     Settings::new()

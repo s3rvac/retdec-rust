@@ -5,10 +5,7 @@
 //! You can either incorporate the library in your own tools:
 //!
 //! ```no_run
-//! use retdec::decompilation::DecompilationArguments;
-//! use retdec::decompiler::Decompiler;
-//! use retdec::file::File;
-//! use retdec::settings::Settings;
+//! use retdec::{Decompiler, DecompilationArguments, File, Settings};
 //!
 //! let decompiler = Decompiler::new(
 //!     Settings::new()
@@ -93,6 +90,18 @@ pub mod file;
 pub mod fileinfo;
 pub mod settings;
 pub mod tools;
+
+// Reexports.
+pub use analysis::Analysis;
+pub use analysis::AnalysisArguments;
+pub use decompilation::Decompilation;
+pub use decompilation::DecompilationArguments;
+pub use decompiler::Decompiler;
+pub use error::Error;
+pub use error::Result;
+pub use file::File;
+pub use fileinfo::Fileinfo;
+pub use settings::Settings;
 
 mod connection;
 mod resource;
