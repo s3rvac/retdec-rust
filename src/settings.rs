@@ -20,7 +20,7 @@ const DEFAULT_API_URL: &'static str = "https://retdec.com/service/api";
 ///
 /// assert_eq!(s.api_key(), Some("MY-API-KEY"));
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub struct Settings {
     api_key: Option<String>,
     api_url: String,
