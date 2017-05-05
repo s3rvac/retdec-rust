@@ -50,6 +50,10 @@ int main(int argc, char ** argv) {
 The library is **at the beginning of its development** and its state is
 **pre-alpha** (**highly experimental**).
 
+A summary of the supported parts of the [retdec.com's
+API](https://retdec.com/api/docs/index.html) is available
+[here](https://github.com/s3rvac/retdec-rust/tree/master/STATUS.md).
+
 ## Installation
 
 Currently, the only way of using the library and tools is to specify the
