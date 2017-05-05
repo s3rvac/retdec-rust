@@ -22,8 +22,6 @@ use resource::Resource;
 /// ```
 #[derive(Clone, Debug)]
 pub struct DecompilationArguments {
-    output_format: Option<String>,
-    verbose: Option<bool>,
     input_file: Option<File>,
 }
 
@@ -31,8 +29,6 @@ impl DecompilationArguments {
     /// Returns new arguments initialized to default values.
     pub fn new() -> Self {
         DecompilationArguments {
-            output_format: None,
-            verbose: None,
             input_file: None,
         }
     }
