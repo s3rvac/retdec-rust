@@ -65,6 +65,7 @@
 // Add more lint checks.
 #![deny(unsafe_code)]
 #![deny(unstable_features)]
+#![warn(missing_docs)]
 #![warn(trivial_casts)]
 #![warn(trivial_numeric_casts)]
 #![warn(unused_extern_crates)]
