@@ -70,8 +70,9 @@ directly from [crates.io](https://crates.io/).
 
 ## Documentation
 
-An automatically generated API documentation will be available after the first
-version is released.
+An automatically generated API documentation is available here:
+
+* [master](https://projects.petrzemek.net/retdec-rust/doc/master/retdec/index.html)
 
 ## License
 
