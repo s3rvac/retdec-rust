@@ -45,6 +45,10 @@ int main(int argc, char ** argv) {
 }
 ```
 
+Additionally, the crate provides access to the
+[fileinfo](https://retdec.com/api/docs/fileinfo.html) service (analysis of
+binary files).
+
 ## Status
 
 The library is **at the beginning of its development** and its state is
