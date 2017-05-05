@@ -22,7 +22,7 @@ use resource::Resource;
 ///     .with_verbose(true)
 ///     .with_input_file(File::from_path("file.exe").unwrap());
 /// ```
-#[derive(Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct AnalysisArguments {
     output_format: Option<String>,
     verbose: Option<bool>,
@@ -32,7 +32,11 @@ pub struct AnalysisArguments {
 impl AnalysisArguments {
     /// Returns new arguments initialized to default values.
     pub fn new() -> Self {
-        AnalysisArguments::default()
+        AnalysisArguments {
+            output_format: None,
+            verbose: None,
+            input_file: None,
+        }
     }
 
     /// Sets the format of the output from the analysis.
