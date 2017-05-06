@@ -536,7 +536,7 @@ pub mod tests {
         /// Adds a new string argument (`"name=value"`).
         pub fn with_string_arg<N, V>(mut self, name: N, value: V) -> Self
             where N: Into<String>,
-                V: Into<String>
+                  V: Into<String>
         {
             self.args.add_string_arg(name, value);
             self

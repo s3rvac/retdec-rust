@@ -72,7 +72,8 @@ impl File {
     /// assert_eq!(file.name(), "other.exe");
     /// ```
     pub fn from_path_with_custom_name<P, N>(path: P, name: N) -> Result<File>
-        where P: AsRef<Path>, N: Into<String>
+        where P: AsRef<Path>,
+              N: Into<String>
     {
         let path = path.as_ref();
         Ok(File {
@@ -98,7 +99,7 @@ impl File {
     {
         File {
             content: content.to_vec(),
-            name: name.into()
+            name: name.into(),
         }
     }
 
