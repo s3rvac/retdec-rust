@@ -20,7 +20,7 @@ use resource::Resource;
 /// let args = DecompilationArguments::new()
 ///     .with_input_file(File::from_path("file.exe").unwrap());
 /// ```
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct DecompilationArguments {
     input_file: Option<File>,
 }
@@ -28,9 +28,7 @@ pub struct DecompilationArguments {
 impl DecompilationArguments {
     /// Returns new arguments initialized to default values.
     pub fn new() -> Self {
-        DecompilationArguments {
-            input_file: None,
-        }
+        Self::default()
     }
 
     /// Sets the file to be decompiled.

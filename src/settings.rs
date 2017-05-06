@@ -40,10 +40,7 @@ impl Settings {
     ///   URL is what you want. Setting a custom API URL is only useful for
     ///   internal development.
     pub fn new() -> Self {
-        Settings {
-            api_key: Self::default_api_key(),
-            api_url: Self::default_api_url(),
-        }
+        Self::default()
     }
 
     /// Sets an API key when used as a builder.
@@ -139,6 +136,18 @@ impl Settings {
     }
 }
 
+impl Default for Settings {
+    /// Creates settings with default values.
+    ///
+    /// Returns the same value as `Settings::new()`.
+    fn default() -> Settings {
+        Settings {
+            api_key: Self::default_api_key(),
+            api_url: Self::default_api_url(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -161,6 +170,15 @@ mod tests {
             }
             Err(_) => assert_eq!(s.api_url(), DEFAULT_API_URL),
         }
+    }
+
+    #[test]
+    fn new_returns_same_value_as_default() {
+        let s1 = Settings::new();
+        let s2 = Settings::default();
+
+        assert_eq!(s1.api_key(), s2.api_key());
+        assert_eq!(s1.api_url(), s2.api_url());
     }
 
     #[test]
