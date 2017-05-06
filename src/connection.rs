@@ -393,7 +393,7 @@ impl HyperAPIConnection {
                        method: HyperMethod,
                        url: &str,
                        args: &APIArguments) -> Result<HyperRequest<Fresh>> {
-        let mut parsed_url = HyperUrl::parse(&url)
+        let mut parsed_url = HyperUrl::parse(url)
             .chain_err(|| "invalid URL")?;
         for (key, value) in args.args() {
             parsed_url.query_pairs_mut().append_pair(key, value);
@@ -460,7 +460,7 @@ impl APIConnection for HyperAPIConnection {
     fn send_get_request(&mut self,
                         url: &str,
                         args: APIArguments) -> Result<APIResponse> {
-        let request = self.prepare_request(HyperMethod::Get, &url, &args)
+        let request = self.prepare_request(HyperMethod::Get, url, &args)
             .chain_err(|| format!("failed to prepare a GET request to {}", url))?;
         let response = request.start()
             .chain_err(|| format!("failed to start a GET request to {}", url))?
@@ -472,7 +472,7 @@ impl APIConnection for HyperAPIConnection {
     fn send_post_request(&mut self,
                          url: &str,
                          args: APIArguments) -> Result<APIResponse> {
-        let request = self.prepare_request(HyperMethod::Post, &url, &args)
+        let request = self.prepare_request(HyperMethod::Post, url, &args)
             .chain_err(|| format!("failed to prepare a POST request to {}", url))?;
         // The retdec.com API does not support chunked requests, so ensure that
         // we send a request with the Content-Length header by using

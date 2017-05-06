@@ -55,8 +55,8 @@ impl File {
     {
         let path = path.as_ref();
         Ok(File {
-            content: Self::read_file(&path)?,
-            name: Self::get_file_name(&path)?,
+            content: Self::read_file(path)?,
+            name: Self::get_file_name(path)?,
         })
     }
 
@@ -76,7 +76,7 @@ impl File {
     {
         let path = path.as_ref();
         Ok(File {
-            content: Self::read_file(&path)?,
+            content: Self::read_file(path)?,
             name: name.into(),
         })
     }
