@@ -43,7 +43,7 @@ impl Headers {
 
     /// Returns the first value of a header with the given name.
     pub fn first_value_for<'a>(&'a self, name: &str) -> Option<&'a str> {
-        for header in self.headers.iter() {
+        for header in &self.headers {
             if header.name == name {
                 return Some(&header.value);
             }
