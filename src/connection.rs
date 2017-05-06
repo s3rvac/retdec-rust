@@ -681,12 +681,23 @@ pub mod tests {
         }
     }
 
-    struct InnerAPIConnectionMock {
+    /// A wrapper over `APIConnectionMock` that can be passed to functions that
+    /// expect `Box<APIConnection>`.
+    pub struct APIConnectionMockWrapper {
         settings: Settings,
         conn: Rc<RefCell<APIConnectionMock>>,
     }
 
-    impl APIConnection for InnerAPIConnectionMock {
+    impl APIConnectionMockWrapper {
+        pub fn new(settings: Settings, conn: Rc<RefCell<APIConnectionMock>>) -> Self {
+            APIConnectionMockWrapper {
+                settings: settings,
+                conn: conn,
+            }
+        }
+    }
+
+    impl APIConnection for APIConnectionMockWrapper {
         fn api_url(&self) -> &str {
             self.settings.api_url()
         }
@@ -723,10 +734,10 @@ pub mod tests {
     impl APIConnectionFactory for APIConnectionFactoryMock {
         fn new_connection(&self) -> Box<APIConnection> {
             Box::new(
-                InnerAPIConnectionMock {
-                    settings: self.settings.clone(),
-                    conn: self.conn.clone(),
-                }
+                APIConnectionMockWrapper::new(
+                    self.settings.clone(),
+                    self.conn.clone()
+                )
             )
         }
     }
