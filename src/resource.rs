@@ -57,9 +57,9 @@ impl Resource {
         let err = format!("{} returned invalid JSON response", self.status_url);
         let response = self.conn.send_get_request_without_args(&self.status_url)?;
         let status = response.body_as_json()?;
-        self.finished = status["finished"].as_bool().ok_or(err.clone())?;
-        self.succeeded = status["succeeded"].as_bool().ok_or(err.clone())?;
-        self.failed = status["failed"].as_bool().ok_or(err.clone())?;
+        self.finished = status["finished"].as_bool().ok_or_else(|| err.clone())?;
+        self.succeeded = status["succeeded"].as_bool().ok_or_else(|| err.clone())?;
+        self.failed = status["failed"].as_bool().ok_or_else(|| err.clone())?;
         if let Some(error) = status["error"].as_str() {
             self.error = error.to_string();
         }

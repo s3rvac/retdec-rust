@@ -278,7 +278,7 @@ impl File {
 
     fn get_file_name(path: &Path) -> Result<String> {
         let file_name = path.file_name()
-            .ok_or(format!("no file name in {:?}", path))?;
+            .ok_or_else(|| format!("no file name in {:?}", path))?;
         let file_name = file_name.to_string_lossy();
         Ok(file_name.into_owned())
     }

@@ -55,7 +55,7 @@ impl Fileinfo {
         let response = conn.send_post_request(&url, api_args)
             .chain_err(|| "failed to start an analysis")?;
         let id = response.json_value_as_string("id")
-            .ok_or(format!("{} returned invalid JSON response", url))?;
+            .ok_or_else(|| format!("{} returned invalid JSON response", url))?;
         Ok(Analysis::new(id, conn))
     }
 
