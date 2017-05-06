@@ -629,6 +629,12 @@ pub mod tests {
             )
         }
 
+        /// Removes all sent requests and set responses.
+        pub fn reset(&mut self) {
+            self.requests.clear();
+            self.responses.clear();
+        }
+
         fn add_request<U>(&mut self,
                     method: &'static str,
                     url: U,
@@ -783,6 +789,16 @@ pub mod tests {
         /// Sets the body of the response.
         pub fn with_body(mut self, new_body: &[u8]) -> Self {
             self.response.body = new_body.to_vec();
+            self
+        }
+
+        /// Sets the response to return the given file.
+        pub fn with_file(mut self, file: File) -> Self {
+            self.response.headers.add(Header {
+                name: "Content-Disposition".to_string(),
+                value: format!("attachment; filename={}", file.name()),
+            });
+            self.response.body = file.content().to_vec();
             self
         }
 
@@ -1002,8 +1018,9 @@ pub mod tests {
     #[test]
     fn api_response_body_as_file_returns_correct_file_when_response_is_file() {
         let r = APIResponseBuilder::new()
-            .with_header("Content-Disposition", "attachment; filename=file.txt")
-            .with_body(b"content")
+            .with_file(
+                File::from_content_with_name(b"content", "file.txt")
+            )
             .build();
 
         let file = r.body_as_file().expect("expected a file to be returned");
