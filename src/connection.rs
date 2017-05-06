@@ -481,7 +481,7 @@ impl APIConnection for HyperAPIConnection {
         let mut mp = Multipart::from_request_sized(request)
             .chain_err(|| format!("failed to prepare a multipart POST request to {}", url))?;
         for (name, file) in args.files() {
-            mp.write_stream(name, &mut file.content(), Some(file.name()), None)
+            mp.write_stream(name, &mut file.content(), Some(&file.safe_name()), None)
                 .chain_err(|| format!("failed to add a file into a POST request to {}", url))?;
         }
         let response = mp.send()
