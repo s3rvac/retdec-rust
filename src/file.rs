@@ -7,6 +7,8 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::str;
 
+use unidecode::unidecode;
+
 use error::Result;
 use error::ResultExt;
 
@@ -164,6 +166,34 @@ impl File {
         &self.name
     }
 
+    /// Returns a modified version of the file's name that can be passed to the
+    /// retdec.com's API.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use retdec::file::File;
+    ///
+    /// let file = File::from_content_with_name(b"content", "jalapeño.txt");
+    ///
+    /// assert_eq!(file.safe_name(), "jalapeno.txt");
+    /// ```
+    pub fn safe_name(&self) -> String {
+        // There is a limitation in the retdec.com's API concerning file names.
+        // More specifically, file names cannot contain non-ASCII characters.
+        // https://retdec.com/api/docs/essential_information.html#files
+        let safe_name = unidecode(&self.name);
+
+        // Moreover, we replace special characters with an underscore.
+        fn is_special(c: char) -> bool {
+            // unidecode() produces an ASCII string, so the following cast to
+            // u8 is safe.
+            let c = c as u8;
+            c < 32 || c > 127
+        }
+        safe_name.chars().map(|c| if is_special(c) { '_' } else { c }).collect()
+    }
+
     /// Stores a copy of the file into the given directory.
     ///
     /// Returns a path to the saved file.
@@ -267,6 +297,27 @@ mod tests {
 
         assert_eq!(file.content(), b"content");
         assert_eq!(file.name(), "file.txt");
+    }
+
+    #[test]
+    fn file_safe_name_returns_name_with_only_ascii_characters() {
+        let file = File::from_content_with_name(b"content", "jalapeño.txt");
+
+        assert_eq!(file.safe_name(), "jalapeno.txt");
+    }
+
+    #[test]
+    fn file_safe_name_replaces_special_characters_with_underscores() {
+        let file = File::from_content_with_name(b"content", "a\nb");
+
+        assert_eq!(file.safe_name(), "a_b");
+    }
+
+    #[test]
+    fn file_safe_name_keeps_spaces() {
+        let file = File::from_content_with_name(b"content", "a b");
+
+        assert_eq!(file.safe_name(), "a b");
     }
 
     #[test]

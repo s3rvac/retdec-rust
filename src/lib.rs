@@ -77,6 +77,7 @@ extern crate hyper;
 extern crate json;
 extern crate regex;
 extern crate multipart;
+extern crate unidecode;
 #[macro_use]
 extern crate error_chain;
 
