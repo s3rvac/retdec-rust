@@ -311,7 +311,7 @@ pub trait APIConnection {
 /// It wraps an existing API connection. Then, when a response from a GET/POST
 /// request is received, it verifies that the request succeeded. If the request
 /// failed, it automatically returns an error.
-struct ResponseVerifyingAPIConnection<> {
+struct ResponseVerifyingAPIConnection {
     conn: Box<APIConnection>,
 }
 
