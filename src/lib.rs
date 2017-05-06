@@ -5,19 +5,22 @@
 //! You can either incorporate the library in your own tools:
 //!
 //! ```no_run
+//! # use retdec::error::Result;
 //! use retdec::{Decompiler, DecompilationArguments, File, Settings};
 //!
+//! # fn test() -> Result<()> {
 //! let decompiler = Decompiler::new(
 //!     Settings::new()
 //!         .with_api_key("YOUR-API-KEY")
 //! );
 //! let mut decompilation = decompiler.start_decompilation(
 //!     DecompilationArguments::new()
-//!         .with_input_file(File::from_path("hello.exe").unwrap())
-//! ).unwrap();
-//! decompilation.wait_until_finished().unwrap();
-//! let output_code = decompilation.get_output_hll_code().unwrap();
+//!         .with_input_file(File::from_path("hello.exe")?)
+//! )?;
+//! decompilation.wait_until_finished()?;
+//! let output_code = decompilation.get_output_hll_code()?;
 //! print!("{}", output_code);
+//! # Ok(()) }
 //! ```
 //!
 //! or you can use the provided tool for stand-alone decompilations:
