@@ -16,7 +16,7 @@ use file::File;
 use fileinfo::Fileinfo;
 use settings::Settings;
 
-fn parse_args<'a>(args: &Vec<String>) -> ArgMatches<'a> {
+fn parse_args<'a>(args: &[String]) -> ArgMatches<'a> {
     App::new("fileinfo")
         .version(VERSION)
         .about("Analyzes the given binary file via retdec.com's API.")
@@ -63,7 +63,7 @@ fn print_analysis_result(output: &str) -> Result<()> {
     Ok(())
 }
 
-fn run(args: &Vec<String>) -> Result<()> {
+fn run(args: &[String]) -> Result<()> {
     let args = parse_args(args);
 
     let mut settings = Settings::new();

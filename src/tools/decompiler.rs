@@ -16,7 +16,7 @@ use error::ResultExt;
 use file::File;
 use settings::Settings;
 
-fn parse_args<'a>(args: &Vec<String>) -> ArgMatches<'a> {
+fn parse_args<'a>(args: &[String]) -> ArgMatches<'a> {
     App::new("decompiler")
         .version(VERSION)
         .about("Decompiles the given file via retdec.com's API.")
@@ -50,7 +50,7 @@ fn print_decompilation_result(output: &str) -> Result<()> {
     Ok(())
 }
 
-fn run(args: &Vec<String>) -> Result<()> {
+fn run(args: &[String]) -> Result<()> {
     let args = parse_args(args);
 
     let mut settings = Settings::new();
