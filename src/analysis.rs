@@ -190,6 +190,27 @@ impl Analysis {
         self.resource.has_failed()
     }
 
+    /// Returns the error message (if any).
+    ///
+    /// Does not access the API, so the returned value may be outdated. If you
+    /// want to have an up-to-date information, use `get_error()` instead.
+    ///
+    /// Calling this method makes sense only when the analysis has failed.
+    /// Otherwise, it will always return `None`.
+    pub fn error(&self) -> Option<&str> {
+        self.resource.error()
+    }
+
+    /// Returns the error message (if any).
+    ///
+    /// Accesses the API.
+    ///
+    /// Calling this method makes sense only when the analysis has failed.
+    /// Otherwise, it will always return `None`.
+    pub fn get_error(&mut self) -> Result<Option<&str>> {
+        self.resource.get_error()
+    }
+
     /// Waits until the analysis has finished.
     ///
     /// When this method returns `Ok()`, the analysis has finished.
@@ -498,6 +519,64 @@ mod tests {
             .expect("has_failed() should have succeeded");
 
         assert!(failed);
+        assert!(conn.borrow().request_sent(
+            "GET",
+            "https://retdec.com/service/api/fileinfo/analyses/ID/status",
+            APIArgumentsBuilder::new()
+                .build()
+        ));
+    }
+
+    #[test]
+    fn analysis_error_returns_none_when_analysis_has_not_finished() {
+        let (_, analysis) = create_analysis();
+
+        assert!(analysis.error().is_none());
+    }
+
+    #[test]
+    fn analysis_error_returns_error_message_when_analysis_has_failed() {
+        let (conn, mut analysis) = create_analysis();
+        make_analysis_fail(&conn, &mut analysis, "unknown error");
+
+        assert_eq!(analysis.error(), Some("unknown error"));
+    }
+
+    #[test]
+    fn analysis_get_error_returns_error_and_does_not_update_status_when_analysis_has_failed() {
+        let (conn, mut analysis) = create_analysis();
+        make_analysis_fail(&conn, &mut analysis, "unknown error");
+
+        let error = analysis.get_error()
+            .expect("get_error() should have succeeded");
+
+        assert_eq!(error, Some("unknown error"));
+        assert!(conn.borrow().no_requests_sent());
+    }
+
+    #[test]
+    fn analysis_get_error_checks_status_when_analysis_has_not_yet_failed() {
+        let (conn, mut analysis) = create_analysis();
+        conn.borrow_mut().add_response(
+            "GET",
+            "https://retdec.com/service/api/fileinfo/analyses/ID/status",
+            Ok(
+                APIResponseBuilder::new()
+                    .with_status_code(200)
+                    .with_body(br#"{
+                        "finished": true,
+                        "succeeded": false,
+                        "failed": true,
+                        "error": "unknown error"
+                    }"#)
+                    .build()
+            )
+        );
+
+        let error = analysis.get_error()
+            .expect("get_error() should have succeeded");
+
+        assert_eq!(error, Some("unknown error"));
         assert!(conn.borrow().request_sent(
             "GET",
             "https://retdec.com/service/api/fileinfo/analyses/ID/status",

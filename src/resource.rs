@@ -17,7 +17,7 @@ pub struct Resource {
     pub finished: bool,
     pub succeeded: bool,
     pub failed: bool,
-    pub error: String,
+    pub error: Option<String>,
 }
 
 impl Resource {
@@ -48,7 +48,7 @@ impl Resource {
             finished: false,
             succeeded: false,
             failed: false,
-            error: String::default(),
+            error: None,
         }
     }
 
@@ -61,7 +61,7 @@ impl Resource {
         self.succeeded = status["succeeded"].as_bool().ok_or_else(|| err.clone())?;
         self.failed = status["failed"].as_bool().ok_or_else(|| err.clone())?;
         if let Some(error) = status["error"].as_str() {
-            self.error = error.to_string();
+            self.error = Some(error.to_string());
         }
         Ok(status)
     }
@@ -82,6 +82,17 @@ impl Resource {
     pub fn has_failed(&mut self) -> Result<bool> {
         self.update_status_if_not_finished()?;
         Ok(self.failed)
+    }
+
+    /// Returns the error message (if any).
+    pub fn error(&self) -> Option<&str> {
+        self.error.as_ref().map(String::as_str)
+    }
+
+    /// Returns the error message (if any).
+    pub fn get_error(&mut self) -> Result<Option<&str>> {
+        self.update_status_if_not_finished()?;
+        Ok(self.error())
     }
 
     /// Waits (sleeps) for the given time duration.
