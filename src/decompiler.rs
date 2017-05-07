@@ -94,7 +94,7 @@ mod tests {
     use file::File;
 
     fn create_decompiler() -> (Rc<RefCell<APIConnectionMock>>, Decompiler) {
-        // We need to force an API URL to prevent it from being overriden by
+        // We need to force an API URL to prevent it from being overridden by
         // setting the RETDEC_API_URL environment variable.
         let settings = Settings::new()
             .with_api_key("test")

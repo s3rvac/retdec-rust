@@ -233,7 +233,7 @@ mod tests {
     use settings::Settings;
 
     fn create_decompilation() -> (Rc<RefCell<APIConnectionMock>>, Decompilation) {
-        // We need to force an API URL to prevent it from being overriden by
+        // We need to force an API URL to prevent it from being overridden by
         // setting the RETDEC_API_URL environment variable.
         let settings = Settings::new()
             .with_api_key("test")
