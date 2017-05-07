@@ -171,6 +171,25 @@ impl Analysis {
         self.resource.has_succeeded()
     }
 
+    /// Has the analysis failed?
+    ///
+    /// Does not access the API, so the returned value may be outdated. If you
+    /// want to have an up-to-date information, use `has_failed()` instead.
+    ///
+    /// The returned value makes sense only when the analysis has finished.
+    pub fn failed(&self) -> bool {
+        self.resource.finished
+    }
+
+    /// Has the analysis failed?
+    ///
+    /// Accesses the API.
+    ///
+    /// The returned value makes sense only when the analysis has finished.
+    pub fn has_failed(&mut self) -> Result<bool> {
+        self.resource.has_failed()
+    }
+
     /// Waits until the analysis has finished.
     ///
     /// When this method returns `Ok()`, the analysis has finished.
@@ -267,6 +286,34 @@ mod tests {
                         "succeeded": true,
                         "failed": false
                     }"#)
+                    .build()
+            )
+        );
+        analysis.wait_until_finished()
+            .expect("expected the analysis to finish successfully");
+        assert!(conn.borrow().request_sent(
+            "GET",
+            "https://retdec.com/service/api/fileinfo/analyses/ID/status",
+            APIArgumentsBuilder::new()
+                .build()
+        ));
+        conn.borrow_mut().reset();
+    }
+
+    fn make_analysis_fail(conn: &Rc<RefCell<APIConnectionMock>>,
+                          analysis: &mut Analysis,
+                          error: &str) {
+        conn.borrow_mut().add_response(
+            "GET",
+            "https://retdec.com/service/api/fileinfo/analyses/ID/status",
+            Ok(
+                APIResponseBuilder::new()
+                    .with_status_code(200)
+                    .with_body((r#"{
+                        "finished": true,
+                        "succeeded": false,
+                        "failed": true,
+                        "error": ""#.to_owned() + error + "\"}").as_bytes())
                     .build()
             )
         );
@@ -394,6 +441,63 @@ mod tests {
             .expect("has_succeeded() should have succeeded");
 
         assert!(succeeded);
+        assert!(conn.borrow().request_sent(
+            "GET",
+            "https://retdec.com/service/api/fileinfo/analyses/ID/status",
+            APIArgumentsBuilder::new()
+                .build()
+        ));
+    }
+
+    #[test]
+    fn analysis_failed_returns_false_when_analysis_has_not_yet_finished() {
+        let (_, analysis) = create_analysis();
+
+        assert!(!analysis.failed());
+    }
+
+    #[test]
+    fn analysis_failed_returns_true_when_analysis_has_failed() {
+        let (conn, mut analysis) = create_analysis();
+        make_analysis_fail(&conn, &mut analysis, "unknown error");
+
+        assert!(analysis.failed());
+    }
+
+    #[test]
+    fn analysis_has_failed_returns_true_and_does_not_update_status_when_analysis_has_failed() {
+        let (conn, mut analysis) = create_analysis();
+        make_analysis_fail(&conn, &mut analysis, "unknown error");
+
+        let failed = analysis.has_failed()
+            .expect("has_failed() should have succeeded");
+
+        assert!(failed);
+        assert!(conn.borrow().no_requests_sent());
+    }
+
+    #[test]
+    fn analysis_has_failed_checks_status_when_analysis_has_not_yet_failed() {
+        let (conn, mut analysis) = create_analysis();
+        conn.borrow_mut().add_response(
+            "GET",
+            "https://retdec.com/service/api/fileinfo/analyses/ID/status",
+            Ok(
+                APIResponseBuilder::new()
+                    .with_status_code(200)
+                    .with_body(br#"{
+                        "finished": true,
+                        "succeeded": false,
+                        "failed": true
+                    }"#)
+                    .build()
+            )
+        );
+
+        let failed = analysis.has_failed()
+            .expect("has_failed() should have succeeded");
+
+        assert!(failed);
         assert!(conn.borrow().request_sent(
             "GET",
             "https://retdec.com/service/api/fileinfo/analyses/ID/status",

@@ -78,6 +78,12 @@ impl Resource {
         Ok(self.succeeded)
     }
 
+    /// Has the resource failed?
+    pub fn has_failed(&mut self) -> Result<bool> {
+        self.update_status_if_not_finished()?;
+        Ok(self.failed)
+    }
+
     /// Waits (sleeps) for the given time duration.
     pub fn wait_for(&self, duration: Duration) {
         thread::sleep(duration);
