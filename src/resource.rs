@@ -68,17 +68,13 @@ impl Resource {
 
     /// Has the resource finished?
     pub fn has_finished(&mut self) -> Result<bool> {
-        if !self.finished {
-            self.update_status()?;
-        }
+        self.update_status_if_not_finished()?;
         Ok(self.finished)
     }
 
     /// Has the resource succeeded?
     pub fn has_succeeded(&mut self) -> Result<bool> {
-        if !self.succeeded {
-            self.update_status()?;
-        }
+        self.update_status_if_not_finished()?;
         Ok(self.succeeded)
     }
 
@@ -94,5 +90,12 @@ impl Resource {
         } else {
             bail!("{} has not succeeded", resource_name)
         }
+    }
+
+    fn update_status_if_not_finished(&mut self) -> Result<()> {
+        if !self.finished {
+            self.update_status()?;
+        }
+        Ok(())
     }
 }
