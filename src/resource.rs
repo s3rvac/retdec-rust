@@ -66,6 +66,14 @@ impl Resource {
         Ok(status)
     }
 
+    /// Has the resource finished?
+    pub fn has_finished(&mut self) -> Result<bool> {
+        if !self.finished {
+            self.update_status()?;
+        }
+        Ok(self.finished)
+    }
+
     /// Has the resource succeeded?
     pub fn has_succeeded(&mut self) -> Result<bool> {
         if !self.succeeded {

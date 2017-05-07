@@ -139,9 +139,17 @@ impl Analysis {
     /// Does not access the API, so the returned value may be outdated. In a
     /// greater detail, when it returns `true`, the analysis has surely
     /// finished. However, when it returns `false`, the analysis might or might
-    /// not have finished.
+    /// not have finished. If you want to have an up-to-date information, use
+    /// `has_finished()` instead.
     pub fn finished(&self) -> bool {
         self.resource.finished
+    }
+
+    /// Has the analysis finished?
+    ///
+    /// Accesses the API.
+    pub fn has_finished(&mut self) -> Result<bool> {
+        self.resource.has_finished()
     }
 
     /// Waits until the analysis has finished.
@@ -274,6 +282,48 @@ mod tests {
         make_analysis_succeed(&conn, &mut analysis);
 
         assert!(analysis.finished());
+    }
+
+    #[test]
+    fn analysis_has_finished_returns_true_and_does_not_update_status_when_analysis_has_finished() {
+        let (conn, mut analysis) = create_analysis();
+        make_analysis_succeed(&conn, &mut analysis);
+
+        let finished = analysis.has_finished()
+            .expect("has_finished() should have succeeded");
+
+        assert!(finished);
+        assert!(conn.borrow().no_requests_sent());
+    }
+
+    #[test]
+    fn analysis_has_finished_checks_status_when_analysis_has_not_yet_finished() {
+        let (conn, mut analysis) = create_analysis();
+        conn.borrow_mut().add_response(
+            "GET",
+            "https://retdec.com/service/api/fileinfo/analyses/ID/status",
+            Ok(
+                APIResponseBuilder::new()
+                    .with_status_code(200)
+                    .with_body(br#"{
+                        "finished": true,
+                        "succeeded": true,
+                        "failed": false
+                    }"#)
+                    .build()
+            )
+        );
+
+        let finished = analysis.has_finished()
+            .expect("has_finished() should have succeeded");
+
+        assert!(finished);
+        assert!(conn.borrow().request_sent(
+            "GET",
+            "https://retdec.com/service/api/fileinfo/analyses/ID/status",
+            APIArgumentsBuilder::new()
+                .build()
+        ));
     }
 
     #[test]
