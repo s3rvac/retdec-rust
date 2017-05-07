@@ -138,12 +138,12 @@ impl Decompilation {
     }
 
     fn get_output_response(&mut self, output_type: &str) -> Result<APIResponse> {
-        self.ensure_decompilation_succeeded()?;
+        self.ensure_decompilation_has_succeeded()?;
         let output_url = format!("{}/outputs/{}", self.resource.base_url, output_type);
         self.resource.conn.send_get_request_without_args(&output_url)
     }
 
-    fn ensure_decompilation_succeeded(&self) -> Result<()> {
-        self.resource.ensure_succeeded("decompilation")
+    fn ensure_decompilation_has_succeeded(&mut self) -> Result<()> {
+        self.resource.ensure_has_succeeded("decompilation")
     }
 }

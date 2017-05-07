@@ -187,12 +187,12 @@ impl Analysis {
     }
 
     fn get_output_response(&mut self) -> Result<APIResponse> {
-        self.ensure_analysis_succeeded()?;
+        self.ensure_analysis_has_succeeded()?;
         let output_url = format!("{}/output", self.resource.base_url);
         self.resource.conn.send_get_request_without_args(&output_url)
     }
 
-    fn ensure_analysis_succeeded(&self) -> Result<()> {
-        self.resource.ensure_succeeded("analysis")
+    fn ensure_analysis_has_succeeded(&mut self) -> Result<()> {
+        self.resource.ensure_has_succeeded("analysis")
     }
 }
