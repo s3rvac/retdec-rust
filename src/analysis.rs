@@ -152,6 +152,25 @@ impl Analysis {
         self.resource.has_finished()
     }
 
+    /// Has the analysis succeeded?
+    ///
+    /// Does not access the API, so the returned value may be outdated. If you
+    /// want to have an up-to-date information, use `has_succeeded()` instead.
+    ///
+    /// The returned value makes sense only when the analysis has finished.
+    pub fn succeeded(&self) -> bool {
+        self.resource.finished
+    }
+
+    /// Has the analysis succeeded?
+    ///
+    /// Accesses the API.
+    ///
+    /// The returned value makes sense only when the analysis has finished.
+    pub fn has_succeeded(&mut self) -> Result<bool> {
+        self.resource.has_succeeded()
+    }
+
     /// Waits until the analysis has finished.
     ///
     /// When this method returns `Ok()`, the analysis has finished.
@@ -318,6 +337,63 @@ mod tests {
             .expect("has_finished() should have succeeded");
 
         assert!(finished);
+        assert!(conn.borrow().request_sent(
+            "GET",
+            "https://retdec.com/service/api/fileinfo/analyses/ID/status",
+            APIArgumentsBuilder::new()
+                .build()
+        ));
+    }
+
+    #[test]
+    fn analysis_succeeded_returns_false_when_analysis_has_not_yet_finished() {
+        let (_, analysis) = create_analysis();
+
+        assert!(!analysis.succeeded());
+    }
+
+    #[test]
+    fn analysis_succeeded_returns_true_when_analysis_has_succeeded() {
+        let (conn, mut analysis) = create_analysis();
+        make_analysis_succeed(&conn, &mut analysis);
+
+        assert!(analysis.succeeded());
+    }
+
+    #[test]
+    fn analysis_has_succeeded_returns_true_and_does_not_update_status_when_analysis_has_succeeded() {
+        let (conn, mut analysis) = create_analysis();
+        make_analysis_succeed(&conn, &mut analysis);
+
+        let succeeded = analysis.has_succeeded()
+            .expect("has_succeeded() should have succeeded");
+
+        assert!(succeeded);
+        assert!(conn.borrow().no_requests_sent());
+    }
+
+    #[test]
+    fn analysis_has_succeeded_checks_status_when_analysis_has_not_yet_succeeded() {
+        let (conn, mut analysis) = create_analysis();
+        conn.borrow_mut().add_response(
+            "GET",
+            "https://retdec.com/service/api/fileinfo/analyses/ID/status",
+            Ok(
+                APIResponseBuilder::new()
+                    .with_status_code(200)
+                    .with_body(br#"{
+                        "finished": true,
+                        "succeeded": true,
+                        "failed": false
+                    }"#)
+                    .build()
+            )
+        );
+
+        let succeeded = analysis.has_succeeded()
+            .expect("has_succeeded() should have succeeded");
+
+        assert!(succeeded);
         assert!(conn.borrow().request_sent(
             "GET",
             "https://retdec.com/service/api/fileinfo/analyses/ID/status",
