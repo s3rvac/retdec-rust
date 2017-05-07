@@ -635,6 +635,11 @@ pub mod tests {
             self.responses.clear();
         }
 
+        /// Check if no requests were sent.
+        pub fn no_requests_sent(&self) -> bool {
+            self.requests.is_empty()
+        }
+
         fn add_request<U>(&mut self,
                     method: &'static str,
                     url: U,

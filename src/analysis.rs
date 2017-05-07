@@ -196,3 +196,182 @@ impl Analysis {
         self.resource.ensure_has_succeeded("analysis")
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use std::cell::RefCell;
+    use std::rc::Rc;
+
+    use connection::tests::APIArgumentsBuilder;
+    use connection::tests::APIConnectionMock;
+    use connection::tests::APIConnectionMockWrapper;
+    use connection::tests::APIResponseBuilder;
+    use settings::Settings;
+
+    fn create_analysis() -> (Rc<RefCell<APIConnectionMock>>, Analysis) {
+        // We need to force an API URL to prevent it from being overriden by
+        // setting the RETDEC_API_URL environment variable.
+        let settings = Settings::new()
+            .with_api_key("test")
+            .with_api_url("https://retdec.com/service/api");
+        let conn = Rc::new(
+            RefCell::new(
+                APIConnectionMock::new(settings.clone())
+            )
+        );
+        let conn_wrapper = Box::new(
+            APIConnectionMockWrapper::new(settings, conn.clone())
+        );
+        (conn, Analysis::new("ID", conn_wrapper))
+    }
+
+    fn make_analysis_succeed(conn: &Rc<RefCell<APIConnectionMock>>,
+                             analysis: &mut Analysis) {
+        conn.borrow_mut().add_response(
+            "GET",
+            "https://retdec.com/service/api/fileinfo/analyses/ID/status",
+            Ok(
+                APIResponseBuilder::new()
+                    .with_status_code(200)
+                    .with_body(br#"{
+                        "finished": true,
+                        "succeeded": true,
+                        "failed": false
+                    }"#)
+                    .build()
+            )
+        );
+        analysis.wait_until_finished()
+            .expect("expected the analysis to finish successfully");
+        assert!(conn.borrow().request_sent(
+            "GET",
+            "https://retdec.com/service/api/fileinfo/analyses/ID/status",
+            APIArgumentsBuilder::new()
+                .build()
+        ));
+        conn.borrow_mut().reset();
+    }
+
+    #[test]
+    fn analysis_id_returns_id_of_analysis() {
+        let (_, analysis) = create_analysis();
+
+        assert_eq!(analysis.id(), "ID");
+    }
+
+    #[test]
+    fn analysis_finished_returns_false_when_analysis_has_not_finished() {
+        let (_, analysis) = create_analysis();
+
+        assert!(!analysis.finished());
+    }
+
+    #[test]
+    fn analysis_finished_returns_true_when_analysis_has_finished() {
+        let (conn, mut analysis) = create_analysis();
+        make_analysis_succeed(&conn, &mut analysis);
+
+        assert!(analysis.finished());
+    }
+
+    #[test]
+    fn analysis_wait_until_finished_does_nothing_when_analysis_has_finished() {
+        let (conn, mut analysis) = create_analysis();
+        make_analysis_succeed(&conn, &mut analysis);
+
+        analysis.wait_until_finished()
+            .expect("wait_until_finished() should have succeeded");
+
+        assert!(conn.borrow().no_requests_sent());
+    }
+
+    #[test]
+    fn analysis_wait_until_finished_updates_status_until_analysis_finishes() {
+        let (conn, mut analysis) = create_analysis();
+        conn.borrow_mut().add_response(
+            "GET",
+            "https://retdec.com/service/api/fileinfo/analyses/ID/status",
+            Ok(
+                APIResponseBuilder::new()
+                    .with_status_code(200)
+                    .with_body(br#"{
+                        "finished": true,
+                        "succeeded": true,
+                        "failed": false
+                    }"#)
+                    .build()
+            )
+        );
+
+        analysis.wait_until_finished()
+            .expect("wait_until_finished() should have succeeded");
+
+        assert!(conn.borrow().request_sent(
+            "GET",
+            "https://retdec.com/service/api/fileinfo/analyses/ID/status",
+            APIArgumentsBuilder::new()
+                .build()
+        ));
+    }
+
+    #[test]
+    fn analysis_get_output_checks_if_analysis_succeeded_and_returns_its_output() {
+        let (conn, mut analysis) = create_analysis();
+        make_analysis_succeed(&conn, &mut analysis);
+        conn.borrow_mut().add_response(
+            "GET",
+            "https://retdec.com/service/api/fileinfo/analyses/ID/output",
+            Ok(
+                APIResponseBuilder::new()
+                    .with_status_code(200)
+                    .with_body(b"Output from analysis")
+                    .build()
+            )
+        );
+
+        let output = analysis.get_output()
+            .expect("get_output() should have succeeded");
+
+        assert_eq!(output, "Output from analysis");
+        assert!(conn.borrow().request_sent(
+            "GET",
+            "https://retdec.com/service/api/fileinfo/analyses/ID/output",
+            APIArgumentsBuilder::new()
+                .build()
+        ));
+    }
+
+    #[test]
+    fn analysis_get_output_as_file_checks_if_analysis_succeeded_and_returns_its_output() {
+        let (conn, mut analysis) = create_analysis();
+        make_analysis_succeed(&conn, &mut analysis);
+        conn.borrow_mut().add_response(
+            "GET",
+            "https://retdec.com/service/api/fileinfo/analyses/ID/output",
+            Ok(
+                APIResponseBuilder::new()
+                    .with_status_code(200)
+                    .with_file(
+                        File::from_content_with_name(
+                            b"Output from analysis",
+                            "output.txt"
+                        )
+                    )
+                    .build()
+            )
+        );
+
+        let output_file = analysis.get_output_as_file()
+            .expect("get_output_as_file() should have succeeded");
+
+        assert_eq!(output_file.content(), b"Output from analysis");
+        assert!(conn.borrow().request_sent(
+            "GET",
+            "https://retdec.com/service/api/fileinfo/analyses/ID/output",
+            APIArgumentsBuilder::new()
+                .build()
+        ));
+    }
+}
