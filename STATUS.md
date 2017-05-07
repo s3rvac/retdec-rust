@@ -77,7 +77,7 @@ The file-analyzing service.
 * [Checking status](https://retdec.com/api/docs/fileinfo.html#checking-status) (partial)
   * general (`running`, `finished`, etc.) (partial)
 * [Obtaining output](https://retdec.com/api/docs/fileinfo.html#obtaining-output) ✔
-* [Error reporting](https://retdec.com/api/docs/fileinfo.html#error-reporting) (partial)
+* [Error reporting](https://retdec.com/api/docs/fileinfo.html#error-reporting) ✔
 
 ## Test
 
