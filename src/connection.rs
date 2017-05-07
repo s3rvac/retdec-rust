@@ -779,18 +779,6 @@ pub mod tests {
             self
         }
 
-        /// Adds an HTTP header to the response.
-        pub fn with_header<N, V>(mut self, name: N, value: V) -> Self
-            where N: Into<String>,
-                  V: Into<String>
-        {
-            self.response.headers.add(Header {
-                name: name.into(),
-                value: value.into(),
-            });
-            self
-        }
-
         /// Sets the body of the response.
         pub fn with_body(mut self, new_body: &[u8]) -> Self {
             self.response.body = new_body.to_vec();
