@@ -99,17 +99,8 @@ mod tests {
         let settings = Settings::new()
             .with_api_key("test")
             .with_api_url("https://retdec.com/service/api");
-        let conn = Rc::new(
-            RefCell::new(
-                APIConnectionMock::new(settings.clone())
-            )
-        );
-        let conn_factory = Box::new(
-            APIConnectionFactoryMock::new(
-                settings.clone(),
-                conn.clone()
-            )
-        );
+        let conn = Rc::new(RefCell::new(APIConnectionMock::new(settings.clone())));
+        let conn_factory = Box::new(APIConnectionFactoryMock::new(conn.clone()));
         (conn, Decompiler::with_conn_factory(conn_factory))
     }
 

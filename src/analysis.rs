@@ -283,14 +283,8 @@ mod tests {
         let settings = Settings::new()
             .with_api_key("test")
             .with_api_url("https://retdec.com/service/api");
-        let conn = Rc::new(
-            RefCell::new(
-                APIConnectionMock::new(settings.clone())
-            )
-        );
-        let conn_wrapper = Box::new(
-            APIConnectionMockWrapper::new(settings, conn.clone())
-        );
+        let conn = Rc::new(RefCell::new(APIConnectionMock::new(settings.clone())));
+        let conn_wrapper = Box::new(APIConnectionMockWrapper::new(conn.clone()));
         (conn, Analysis::new("ID", conn_wrapper))
     }
 

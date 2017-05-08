@@ -700,7 +700,8 @@ pub mod tests {
     }
 
     impl APIConnectionMockWrapper {
-        pub fn new(settings: Settings, conn: Rc<RefCell<APIConnectionMock>>) -> Self {
+        pub fn new(conn: Rc<RefCell<APIConnectionMock>>) -> Self {
+            let settings = conn.borrow().settings.clone();
             APIConnectionMockWrapper {
                 settings: settings,
                 conn: conn,
@@ -728,28 +729,19 @@ pub mod tests {
 
     /// A connection-factory mock to be used in tests.
     pub struct APIConnectionFactoryMock {
-        settings: Settings,
         conn: Rc<RefCell<APIConnectionMock>>,
     }
 
     impl APIConnectionFactoryMock {
         /// Creates a new factory.
-        pub fn new(settings: Settings, conn: Rc<RefCell<APIConnectionMock>>) -> Self {
-            APIConnectionFactoryMock {
-                settings: settings,
-                conn: conn,
-            }
+        pub fn new(conn: Rc<RefCell<APIConnectionMock>>) -> Self {
+            APIConnectionFactoryMock { conn: conn }
         }
     }
 
     impl APIConnectionFactory for APIConnectionFactoryMock {
         fn new_connection(&self) -> Box<APIConnection> {
-            Box::new(
-                APIConnectionMockWrapper::new(
-                    self.settings.clone(),
-                    self.conn.clone()
-                )
-            )
+            Box::new(APIConnectionMockWrapper::new(self.conn.clone()))
         }
     }
 
