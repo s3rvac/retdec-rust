@@ -16,6 +16,8 @@ use settings::Settings;
 /// # Examples
 ///
 /// ```no_run
+/// # use retdec::error::Result;
+/// # fn test() -> Result<()> {
 /// use retdec::analysis::AnalysisArguments;
 /// use retdec::file::File;
 /// use retdec::fileinfo::Fileinfo;
@@ -25,11 +27,12 @@ use settings::Settings;
 ///     .with_api_key("MY-API-KEY");
 /// let fileinfo = Fileinfo::new(settings);
 /// let args = AnalysisArguments::new()
-///     .with_input_file(File::from_path("file.exe").unwrap());
-/// let mut analysis = fileinfo.start_analysis(args).unwrap();
-/// analysis.wait_until_finished().unwrap();
-/// let output = analysis.get_output().unwrap();
+///     .with_input_file(File::from_path("file.exe")?);
+/// let mut analysis = fileinfo.start_analysis(args)?;
+/// analysis.wait_until_finished()?;
+/// let output = analysis.get_output()?;
 /// print!("{}", output);
+/// # Ok(()) } fn main() { test().unwrap() }
 /// ```
 pub struct Fileinfo {
     conn_factory: Box<APIConnectionFactory>,

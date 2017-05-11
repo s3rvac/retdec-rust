@@ -14,11 +14,14 @@ use resource::Resource;
 /// # Examples
 ///
 /// ```no_run
+/// # use retdec::error::Result;
+/// # fn test() -> Result<()> {
 /// use retdec::file::File;
 /// use retdec::decompilation::DecompilationArguments;
 ///
 /// let args = DecompilationArguments::new()
-///     .with_input_file(File::from_path("file.exe").unwrap());
+///     .with_input_file(File::from_path("file.exe")?);
+/// # Ok(()) } fn main() { test().unwrap() }
 /// ```
 #[derive(Clone, Debug, Default)]
 pub struct DecompilationArguments {

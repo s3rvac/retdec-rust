@@ -14,13 +14,16 @@ use resource::Resource;
 /// # Examples
 ///
 /// ```no_run
+/// # use retdec::error::Result;
+/// # fn test() -> Result<()> {
 /// use retdec::analysis::AnalysisArguments;
 /// use retdec::file::File;
 ///
 /// let args = AnalysisArguments::new()
 ///     .with_output_format("json")
 ///     .with_verbose(true)
-///     .with_input_file(File::from_path("file.exe").unwrap());
+///     .with_input_file(File::from_path("file.exe")?);
+/// # Ok(()) } fn main() { test().unwrap() }
 /// ```
 #[derive(Clone, Debug, Default)]
 pub struct AnalysisArguments {

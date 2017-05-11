@@ -20,15 +20,18 @@ use error::ResultExt;
 /// # Examples
 ///
 /// ```no_run
+/// # use retdec::error::Result;
+/// # fn test() -> Result<()> {
 /// use std::path::Path;
 /// use retdec::file::File;
 ///
-/// let file = File::from_path("tests/file.exe").unwrap();
+/// let file = File::from_path("tests/file.exe")?;
 ///
 /// assert_eq!(file.name(), "file.exe");
 ///
-/// let saved_file_path = file.save_into("another_dir").unwrap();
+/// let saved_file_path = file.save_into("another_dir")?;
 /// assert_eq!(saved_file_path, Path::new("another_dir/file.exe"));
+/// # Ok(()) } fn main() { test().unwrap() }
 /// ```
 #[derive(Clone, Debug)]
 pub struct File {
@@ -44,11 +47,14 @@ impl File {
     /// # Examples
     ///
     /// ```no_run
+    /// # use retdec::error::Result;
+    /// # fn test() -> Result<()> {
     /// use retdec::file::File;
     ///
-    /// let file = File::from_path("tests/file.exe").unwrap();
+    /// let file = File::from_path("tests/file.exe")?;
     ///
     /// assert_eq!(file.name(), "file.exe");
+    /// # Ok(()) } fn main() { test().unwrap() }
     /// ```
     pub fn from_path<P>(path: P) -> Result<File>
         where P: AsRef<Path>
@@ -65,11 +71,14 @@ impl File {
     /// # Examples
     ///
     /// ```no_run
+    /// # use retdec::error::Result;
+    /// # fn test() -> Result<()> {
     /// use retdec::file::File;
     ///
-    /// let file = File::from_path_with_custom_name("tests/file.exe", "other.exe").unwrap();
+    /// let file = File::from_path_with_custom_name("tests/file.exe", "other.exe")?;
     ///
     /// assert_eq!(file.name(), "other.exe");
+    /// # Ok(()) } fn main() { test().unwrap() }
     /// ```
     pub fn from_path_with_custom_name<P, N>(path: P, name: N) -> Result<File>
         where P: AsRef<Path>,
@@ -126,11 +135,14 @@ impl File {
     /// # Examples
     ///
     /// ```
+    /// # use retdec::error::Result;
+    /// # fn test() -> Result<()> {
     /// use retdec::file::File;
     ///
     /// let file = File::from_content_with_name(b"content", "file.txt");
     ///
-    /// assert_eq!(file.content_as_text().unwrap(), "content");
+    /// assert_eq!(file.content_as_text()?, "content");
+    /// # Ok(()) } fn main() { test().unwrap() }
     /// ```
     pub fn content_as_text(&self) -> Result<&str> {
         str::from_utf8(&self.content)
@@ -202,13 +214,16 @@ impl File {
     /// # Examples
     ///
     /// ```no_run
+    /// # use retdec::error::Result;
+    /// # fn test() -> Result<()> {
     /// use std::path::Path;
     /// use retdec::file::File;
     ///
-    /// let file = File::from_path("tests/file.exe").unwrap();
+    /// let file = File::from_path("tests/file.exe")?;
     ///
-    /// let saved_file_path = file.save_into("another_dir").unwrap();
+    /// let saved_file_path = file.save_into("another_dir")?;
     /// assert_eq!(saved_file_path, Path::new("another_dir/file.exe"));
+    /// # Ok(()) } fn main() { test().unwrap() }
     /// ```
     pub fn save_into<P>(&self, dir: P) -> Result<PathBuf>
         where P: AsRef<Path>
@@ -223,13 +238,16 @@ impl File {
     /// # Examples
     ///
     /// ```no_run
+    /// # use retdec::error::Result;
+    /// # fn test() -> Result<()> {
     /// use std::path::Path;
     /// use retdec::file::File;
     ///
-    /// let file = File::from_path("tests/file.exe").unwrap();
+    /// let file = File::from_path("tests/file.exe")?;
     ///
-    /// let saved_file_path = file.save_into_under_name("another_dir", "test.exe").unwrap();
+    /// let saved_file_path = file.save_into_under_name("another_dir", "test.exe")?;
     /// assert_eq!(saved_file_path, Path::new("another_dir/test.exe"));
+    /// # Ok(()) } fn main() { test().unwrap() }
     /// ```
     pub fn save_into_under_name<P>(&self, dir: P, name: &str) -> Result<PathBuf>
         where P: AsRef<Path>
@@ -247,11 +265,14 @@ impl File {
     /// # Examples
     ///
     /// ```no_run
+    /// # use retdec::error::Result;
+    /// # fn test() -> Result<()> {
     /// use retdec::file::File;
     ///
-    /// let file = File::from_path("tests/file.exe").unwrap();
+    /// let file = File::from_path("tests/file.exe")?;
     ///
-    /// file.save_as("another_dir/test.exe").unwrap();
+    /// file.save_as("another_dir/test.exe")?;
+    /// # Ok(()) } fn main() { test().unwrap() }
     /// ```
     pub fn save_as<P>(&self, path: P) -> Result<()>
         where P: AsRef<Path>

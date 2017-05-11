@@ -16,6 +16,8 @@ use settings::Settings;
 /// # Examples
 ///
 /// ```no_run
+/// # use retdec::error::Result;
+/// # fn test() -> Result<()> {
 /// use retdec::decompilation::DecompilationArguments;
 /// use retdec::decompiler::Decompiler;
 /// use retdec::file::File;
@@ -25,11 +27,12 @@ use settings::Settings;
 ///     .with_api_key("MY-API-KEY");
 /// let decompiler = Decompiler::new(settings);
 /// let args = DecompilationArguments::new()
-///     .with_input_file(File::from_path("file.exe").unwrap());
-/// let mut decompilation = decompiler.start_decompilation(args).unwrap();
-/// decompilation.wait_until_finished().unwrap();
-/// let output_code = decompilation.get_output_hll_code().unwrap();
+///     .with_input_file(File::from_path("file.exe")?);
+/// let mut decompilation = decompiler.start_decompilation(args)?;
+/// decompilation.wait_until_finished()?;
+/// let output_code = decompilation.get_output_hll_code()?;
 /// print!("{}", output_code);
+/// # Ok(()) } fn main() { test().unwrap() }
 /// ```
 pub struct Decompiler {
     conn_factory: Box<APIConnectionFactory>,
