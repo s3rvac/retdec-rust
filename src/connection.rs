@@ -211,7 +211,7 @@ impl APIArguments {
         where N: Into<String>
     {
         if let Some(value) = value {
-            self.args.insert(name.into(), value);
+            self.add_string_arg(name, value);
         }
     }
 
