@@ -60,7 +60,8 @@ fn run(args: &[String]) -> Result<()> {
     if let Some(api_url) = args.value_of("api_url") {
         settings.set_api_url(api_url);
     }
-    let input_file = args.value_of("FILE").unwrap();
+    let input_file = args.value_of("FILE")
+        .expect("no FILE - this should never happen");
 
     let decompiler = Decompiler::new(settings);
     let args = DecompilationArguments::new()

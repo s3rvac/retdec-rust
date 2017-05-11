@@ -172,7 +172,8 @@ impl APIResponse {
         // https://retdec.com/api/docs/essential_information.html#id3
         let content_disposition = self.headers.first_value_for("Content-Disposition");
         if let Some(content_disposition) = content_disposition {
-            let filename_regex = Regex::new(r"^attachment; filename=(.+)$").unwrap();
+            let filename_regex = Regex::new(r"^attachment; filename=(.+)$")
+                .expect("invalid regexp - this should never happen");
             if let Some(captures) = filename_regex.captures(content_disposition) {
                 if let Some(filename) = captures.get(1) {
                     return Ok(File::from_content_with_name(self.body(), filename.as_str()));
