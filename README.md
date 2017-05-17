@@ -78,6 +78,39 @@ An automatically generated API documentation is available here:
 
 * [master](https://projects.petrzemek.net/retdec-rust/doc/master/retdec/index.html)
 
+## Contributions
+
+Contributions are welcome. Notes:
+
+* To generate API documentation, run
+
+    ```text
+    cargo doc --lib --no-deps
+    ```
+
+* To run unit tests, execute
+
+    ```text
+    cargo test --lib
+    ```
+
+* To run documentation tests, execute
+
+    ```text
+    cargo test --doc
+    ```
+
+* To run all tests, including integration tests, execute
+
+    ```text
+    RETDEC_API_KEY=YOUR-API-KEY cargo test
+    ```
+
+  *Note*: Before running integration tests, you need to set the
+  `RETDEC_API_KEY` environment variable to your API key. Integrations tests
+  communicate with the `retdec.com`'s API, which is why a valid API key is
+  needed.
+
 ## License
 
 Licensed under either of
