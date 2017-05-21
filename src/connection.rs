@@ -395,12 +395,12 @@ impl HyperAPIConnection {
                        url: &str,
                        args: &APIArguments) -> Result<HyperRequest<Fresh>> {
         let mut parsed_url = HyperUrl::parse(url)
-            .chain_err(|| "invalid URL")?;
+            .chain_err(|| format!("invalid URL: {}", url))?;
         for (key, value) in args.args() {
             parsed_url.query_pairs_mut().append_pair(key, value);
         }
         let mut request = HyperRequest::<Fresh>::new(method, parsed_url)
-            .chain_err(|| format!("failed to create a new request to {}", url))?;
+            .chain_err(|| format!("failed to create a new HTTP request to {}", url))?;
         self.add_auth_to_request(&mut request)?;
         self.add_user_agent_to_request(&mut request);
         Ok(request)
