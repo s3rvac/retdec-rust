@@ -54,32 +54,47 @@ binary files).
 
 ## Status
 
-The library is **at the beginning of its development** and its state is
-**pre-alpha** (**highly experimental**).
+Currently, the crate only provides very basic support for the
+[decompilation](https://retdec.com/api/docs/decompiler.html) and
+[file-analyzing](https://retdec.com/api/docs/fileinfo.html) services. **Support
+for more features is under way as the crate is under development.**
 
-A summary of the supported parts of the [retdec.com's
+A summary of all the currently supported parts of the [retdec.com's
 API](https://retdec.com/api/docs/index.html) is available
 [here](https://github.com/s3rvac/retdec-rust/tree/master/STATUS.md).
 
 ## Installation
 
-Currently, the only way of using the library and tools is to specify the
-dependency from this git repository. To do that, add the following lines into
-your `Cargo.toml` file:
+To include the crate into your project so you can use it as a library, add the
+following lines into your `Cargo.toml` file:
+
+```
+[dependencies]
+retdec = "0.1.0"
+```
+
+If you want to use the development version (current `master` branch), use these
+two lines instead:
 
 ```text
 [dependencies]
 retdec = { git = "https://github.com/s3rvac/retdec-rust" }
 ```
 
-As soon as the first version is released, you will be able to add a dependency
-directly from [crates.io](https://crates.io/).
+If you just want to use the command-line tools (`decompiler`, `fileinfo`),
+install the project as follows:
+
+```text
+cargo install retdec
+```
 
 ## Documentation
 
 An automatically generated API documentation is available here:
 
 * [master](https://projects.petrzemek.net/retdec-rust/doc/master/retdec/index.html)
+  (development version)
+* [0.1.0](https://docs.rs/retdec/0.1.0/retdec/) (latest stable version)
 
 ## Contributions
 

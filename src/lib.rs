@@ -46,8 +46,14 @@
 //!
 //! # Status
 //!
-//! The library is **at the beginning of its development** and its state is
-//! **pre-alpha** (**highly experimental**).
+//! Currently, the crate only provides very basic support for the
+//! [decompilation](https://retdec.com/api/docs/decompiler.html) and
+//! [file-analyzing](https://retdec.com/api/docs/fileinfo.html) services. **Support
+//! for more features is under way as the crate is under development.**
+//!
+//! A summary of all the currently supported parts of the [retdec.com's
+//! API](https://retdec.com/api/docs/index.html) is available
+//! [here](https://github.com/s3rvac/retdec-rust/tree/master/STATUS.md).
 //!
 //! # License
 //!

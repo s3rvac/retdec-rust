@@ -1,6 +1,6 @@
 [package]
 name = "retdec"
-version = "0.1.0-prealpha"
+version = "0.1.0"
 authors = ["Petr Zemek <s3rvac@gmail.com>"]
 license = "MIT/Apache-2.0"
 homepage = "https://github.com/s3rvac/retdec-rust"
