@@ -1,6 +1,7 @@
 # retdec-rust
 
 [![docs.rs](https://docs.rs/retdec/badge.svg)](https://docs.rs/retdec)
+[![crates.io](https://img.shields.io/crates/v/retdec.svg)](https://crates.io/crates/retdec)
 
 A Rust library and tools providing easy access to the
 [retdec.com](https://retdec.com) decompilation service through their public
