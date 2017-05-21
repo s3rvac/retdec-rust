@@ -1,5 +1,7 @@
 # retdec-rust
 
+[![docs.rs](https://docs.rs/retdec/badge.svg)](https://docs.rs/retdec)
+
 A Rust library and tools providing easy access to the
 [retdec.com](https://retdec.com) decompilation service through their public
 [REST API](https://retdec.com/api/).
