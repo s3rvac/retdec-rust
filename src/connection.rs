@@ -10,7 +10,9 @@ use hyper::client::request::Request as HyperRequest;
 use hyper::client::response::Response as HyperResponse;
 use hyper::method::Method as HyperMethod;
 use hyper::net::Fresh;
+use hyper::net::HttpsConnector;
 use hyper;
+use hyper_native_tls::NativeTlsClient;
 use json::JsonValue;
 use json;
 use multipart::client::Multipart;
@@ -399,7 +401,12 @@ impl HyperAPIConnection {
         for (key, value) in args.args() {
             parsed_url.query_pairs_mut().append_pair(key, value);
         }
-        let mut request = HyperRequest::<Fresh>::new(method, parsed_url)
+
+        let ssl = NativeTlsClient::new()
+            .chain_err(|| format!("failed to create a SSL client for a HTTP request to {}", url))?;
+        let connector = HttpsConnector::new(ssl);
+
+        let mut request = HyperRequest::<Fresh>::with_connector(method, parsed_url, &connector)
             .chain_err(|| format!("failed to create a new HTTP request to {}", url))?;
         self.add_auth_to_request(&mut request)?;
         self.add_user_agent_to_request(&mut request);

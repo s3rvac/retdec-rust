@@ -77,6 +77,7 @@
 
 extern crate clap;
 extern crate hyper;
+extern crate hyper_native_tls;
 extern crate json;
 extern crate regex;
 extern crate multipart;
