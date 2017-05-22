@@ -1,26 +1,26 @@
 //! Internal utilities.
 
-/// Returns the name of the current platform (e.g. `"linux"`).
+/// Returns the name of the current platform (e.g. `"Linux"`).
 ///
-/// When the name cannot be detected, it returns `"unknown"`.
+/// When the name cannot be detected, it returns `"Unknown"`.
 pub fn current_platform_name() -> &'static str {
     if cfg!(target_os = "linux") {
-        "linux"
+        "Linux"
     } else if cfg!(target_os = "windows") {
-        "windows"
+        "Windows"
     } else if cfg!(target_os = "macos") {
-        "macos"
+        "macOS"
     } else if cfg!(target_os = "ios") {
-        "ios"
+        "iOS"
     } else if cfg!(target_os = "android") {
-        "android"
+        "Android"
     } else if cfg!(target_os = "freebsd") {
-        "freebsd"
+        "FreeBSD"
     } else if cfg!(target_os = "netbsd") {
-        "netbsd"
+        "NetBSD"
     } else if cfg!(target_os = "openbsd") {
-        "openbsd"
+        "OpenBSD"
     } else {
-        "unknown"
+        "Unknown"
     }
 }
