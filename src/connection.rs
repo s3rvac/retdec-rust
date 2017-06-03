@@ -57,6 +57,7 @@ impl Headers {
 /// Response from `retdec.com`'s API.
 #[derive(Clone, Debug, Default)]
 pub struct APIResponse {
+    request_url: String,
     status_code: u16,
     status_message: String,
     headers: Headers,
@@ -64,6 +65,11 @@ pub struct APIResponse {
 }
 
 impl APIResponse {
+    /// Returns the request URL to which this response corresponds.
+    pub fn request_url(&self) -> &str {
+        &self.request_url
+    }
+
     /// Returns the status code (e.g. 200).
     pub fn status_code(&self) -> u16 {
         self.status_code
@@ -435,12 +441,15 @@ impl HyperAPIConnection {
         request.headers_mut().set(hyper::header::UserAgent(user_agent));
     }
 
-    fn parse_response(&self, mut response: HyperResponse) -> Result<APIResponse> {
+    fn parse_response(&self, mut response: HyperResponse, request_url: &str)
+        -> Result<APIResponse>
+    {
         let mut body: Vec<u8> = Vec::new();
         response.read_to_end(&mut body)
             .chain_err(|| format!("failed to read the body of a response from {}", response.url))?;
         let raw_status = response.status_raw();
         Ok(APIResponse {
+            request_url: request_url.to_string(),
             status_code: raw_status.0,
             status_message: raw_status.1.clone().into_owned(),
             headers: self.parse_headers(&response.headers),
@@ -474,7 +483,7 @@ impl APIConnection for HyperAPIConnection {
             .chain_err(|| format!("failed to start a GET request to {}", url))?
             .send()
             .chain_err(|| format!("failed to send a GET request to {}", url))?;
-        self.parse_response(response)
+        self.parse_response(response, url)
     }
 
     fn send_post_request(&mut self,
@@ -494,7 +503,7 @@ impl APIConnection for HyperAPIConnection {
         }
         let response = mp.send()
             .chain_err(|| format!("failed to send a POST request to {}", url))?;
-        self.parse_response(response)
+        self.parse_response(response, url)
     }
 }
 
@@ -804,12 +813,14 @@ pub mod tests {
     #[test]
     fn api_response_getters_return_correct_values() {
         let r = APIResponse {
+            request_url: "https://retdec.com/service/api/test/echo".into(),
             status_code: 200,
             status_message: "OK".into(),
             headers: Headers::default(),
             body: "Hello!".into(),
         };
 
+        assert_eq!(r.request_url(), "https://retdec.com/service/api/test/echo");
         assert_eq!(r.status_code(), 200);
         assert_eq!(*r.status_message(), "OK".to_string());
         assert_eq!(r.body(), b"Hello!");
