@@ -189,7 +189,7 @@ impl APIResponse {
             }
         }
 
-        bail!("response does not contain a file");
+        bail!("response from {} does not contain a file", self.request_url);
     }
 }
 
@@ -335,7 +335,7 @@ impl ResponseVerifyingAPIConnection {
             return Ok(());
         }
 
-        bail!("request failed: {}", response.error_reason())
+        bail!("request to {} failed: {}", response.request_url(), response.error_reason())
     }
 }
 
@@ -774,6 +774,14 @@ pub mod tests {
             APIResponseBuilder::default()
         }
 
+        /// Sets the request URL of the response.
+        pub fn with_request_url<U>(mut self, new_request_url: U) -> Self
+            where U: Into<String>
+        {
+            self.response.request_url = new_request_url.into();
+            self
+        }
+
         /// Sets the status code of the response.
         pub fn with_status_code(mut self, new_status_code: u16) -> Self {
             self.response.status_code = new_status_code;
@@ -1179,6 +1187,7 @@ pub mod tests {
             "https://retdec.com/service/api/XYZ",
             Ok(
                 APIResponseBuilder::new()
+                    .with_request_url("https://retdec.com/service/api/XYZ")
                     .with_status_code(404)
                     .with_status_message("Not Found")
                     .build()
@@ -1194,7 +1203,7 @@ pub mod tests {
             .expect("expected send_get_request_without_args() to fail");
         assert_eq!(
             err.description(),
-            "request failed: Not Found (HTTP 404)"
+            "request to https://retdec.com/service/api/XYZ failed: Not Found (HTTP 404)"
         );
     }
 
@@ -1206,6 +1215,7 @@ pub mod tests {
             "https://retdec.com/service/api/XYZ",
             Ok(
                 APIResponseBuilder::new()
+                    .with_request_url("https://retdec.com/service/api/XYZ")
                     .with_status_code(404)
                     .with_status_message("Not Found")
                     .build()
@@ -1222,7 +1232,7 @@ pub mod tests {
             .expect("expected send_get_request_without_args() to fail");
         assert_eq!(
             err.description(),
-            "request failed: Not Found (HTTP 404)"
+            "request to https://retdec.com/service/api/XYZ failed: Not Found (HTTP 404)"
         );
     }
 }
