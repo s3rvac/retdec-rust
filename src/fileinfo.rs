@@ -132,7 +132,7 @@ mod tests {
         let analysis = fileinfo.start_analysis(args)
             .expect("analysis should have succeeded");
 
-        assert_eq!(*analysis.id(), "ID");
+        assert_eq!(analysis.id(), "ID");
         assert!(conn.borrow_mut().request_sent(
             "POST",
             "https://retdec.com/service/api/fileinfo/analyses",

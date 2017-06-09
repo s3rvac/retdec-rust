@@ -79,7 +79,7 @@ impl Decompilation {
     /// Returns the ID of the decompilation.
     ///
     /// Does not access the API.
-    pub fn id(&self) -> &String {
+    pub fn id(&self) -> &str {
         &self.resource.id
     }
 

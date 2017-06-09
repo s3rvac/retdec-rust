@@ -133,7 +133,7 @@ impl Analysis {
     /// Returns the ID of the analysis.
     ///
     /// Does not access the API.
-    pub fn id(&self) -> &String {
+    pub fn id(&self) -> &str {
         &self.resource.id
     }
 

@@ -76,7 +76,7 @@ impl APIResponse {
     }
 
     /// Returns the status message (e.g. `"Not Found"` for HTTP 404).
-    pub fn status_message(&self) -> &String {
+    pub fn status_message(&self) -> &str {
         &self.status_message
     }
 
