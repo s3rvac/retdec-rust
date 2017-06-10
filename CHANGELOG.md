@@ -3,6 +3,8 @@
 ## dev
 
 * Improved error messages concerning failed HTTP requests.
+* Added support for the [testing
+  service](https://retdec.com/api/docs/test.html).
 * Make the OS name used in the default user-agent string more readable (e.g.
   `freebsd` -> `FreeBSD`).
 * Updated dependencies to their latest versions.
