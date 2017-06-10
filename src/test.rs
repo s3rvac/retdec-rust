@@ -1,4 +1,5 @@
-//! Access to the [testing service](https://retdec.com/api/docs/test.html).
+//! Access to the testing service
+//! ([test](https://retdec.com/api/docs/test.html)).
 
 use connection::APIConnectionFactory;
 use connection::HyperAPIConnectionFactory;
