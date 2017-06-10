@@ -13,11 +13,11 @@ keywords = ["retdec", "decompiler", "decompilation", "disassembler", "fileinfo"]
 [dependencies]
 clap = "2.24.1"
 error-chain = "0.10.0"
-hyper = "0.10.10"
-hyper-native-tls = "0.2.2"
+hyper = "0.10.12"
+hyper-native-tls = "0.2.4"
 json = "0.11.6"
 multipart = "0.12.0"
-regex = "0.2.1"
+regex = "0.2.2"
 unidecode = "0.3.0"
 
 [dev-dependencies]
