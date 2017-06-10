@@ -335,7 +335,7 @@ impl ResponseVerifyingAPIConnection {
             return Ok(());
         }
 
-        bail!("request to {} failed: {}", response.request_url(), response.error_reason())
+        bail!("request to {} failed: {}", response.request_url(), response.error_reason());
     }
 }
 
