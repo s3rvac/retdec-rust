@@ -26,7 +26,7 @@ pub fn path_to_sample(name: &str) -> String {
         .to_string()
 }
 
-fn ensure_api_key_is_set() {
+pub fn ensure_api_key_is_set() {
     env::var("RETDEC_API_KEY")
         .expect("RETDEC_API_KEY has to be set to run this test");
 }
