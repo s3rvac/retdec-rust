@@ -101,6 +101,7 @@ pub mod error;
 pub mod file;
 pub mod fileinfo;
 pub mod settings;
+pub mod test;
 pub mod tools;
 
 // Reexports.
