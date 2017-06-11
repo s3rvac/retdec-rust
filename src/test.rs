@@ -10,21 +10,6 @@ use error::Result;
 use settings::Settings;
 
 /// Testing service.
-///
-/// # Examples
-///
-/// ```no_run
-/// # use retdec::error::Result;
-/// # fn test() -> Result<()> {
-/// use retdec::settings::Settings;
-/// use retdec::test::Test;
-///
-/// let settings = Settings::new()
-///     .with_api_key("MY-API-KEY");
-/// let test = Test::new(settings);
-/// test.auth()?;
-/// # Ok(()) } fn main() { test().unwrap() }
-/// ```
 pub struct Test {
     conn_factory: Box<APIConnectionFactory>,
 }
@@ -43,6 +28,21 @@ impl Test {
     ///
     /// Returns `Ok(())` when the authentication succeeds. Otherwise, it
     /// returns an error.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use retdec::error::Result;
+    /// # fn test() -> Result<()> {
+    /// use retdec::settings::Settings;
+    /// use retdec::test::Test;
+    ///
+    /// let settings = Settings::new()
+    ///     .with_api_key("MY-API-KEY");
+    /// let test = Test::new(settings);
+    /// test.auth()?;
+    /// # Ok(()) } fn main() { test().unwrap() }
+    /// ```
     pub fn auth(&self) -> Result<()> {
         let mut conn = self.conn_factory.new_connection();
         let url = format!("{}/test", conn.api_url());
