@@ -115,6 +115,7 @@ pub use error::Result;
 pub use file::File;
 pub use fileinfo::Fileinfo;
 pub use settings::Settings;
+pub use test::Test;
 
 mod connection;
 mod resource;
