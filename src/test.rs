@@ -1,6 +1,9 @@
 //! Access to the testing service
 //! ([test](https://retdec.com/api/docs/test.html)).
 
+use std::collections::HashMap;
+
+use connection::APIArguments;
 use connection::APIConnectionFactory;
 use connection::HyperAPIConnectionFactory;
 use error::Result;
@@ -53,6 +56,31 @@ impl Test {
         bail!("request to {} failed: {}", url, response.error_reason());
     }
 
+    /// Echoes back the given parameters (key-value pairs).
+    pub fn echo(&self, params: &HashMap<String, String>)
+        -> Result<HashMap<String, String>>
+    {
+        let mut conn = self.conn_factory.new_connection();
+        let url = format!("{}/test/echo", conn.api_url());
+        let mut args = APIArguments::new();
+        for (key, value) in params {
+            args.add_string_arg(key.as_str(), value.as_str());
+        }
+        let response = conn.send_get_request(&url, args)?;
+        if response.failed() {
+            bail!("request to {} failed: {}", url, response.error_reason());
+        }
+
+        let mut out_params = HashMap::new();
+        let json = response.body_as_json()?;
+        for (key, value) in json.entries() {
+            let value = value.as_str()
+                .ok_or_else(|| format!("{} returned invalid JSON response", url))?;
+            out_params.insert(key.to_string(), value.to_string());
+        }
+        Ok(out_params)
+    }
+
     #[cfg(test)]
     fn with_conn_factory(conn_factory: Box<APIConnectionFactory>) -> Self {
         Test { conn_factory: conn_factory }
@@ -66,6 +94,7 @@ mod tests {
     use std::cell::RefCell;
     use std::rc::Rc;
 
+    use connection::tests::APIArgumentsBuilder;
     use connection::tests::APIConnectionFactoryMock;
     use connection::tests::APIConnectionMock;
     use connection::tests::APIResponseBuilder;
@@ -141,5 +170,40 @@ mod tests {
 
         let err = result.err().expect("expected auth() to fail");
         assert!(err.to_string().contains("HTTP 404"));
+    }
+
+    #[test]
+    fn echo_returns_back_input_parameters_when_request_succeeds() {
+        let (conn, test) = create_test();
+        conn.borrow_mut().add_response(
+            "GET",
+            "https://retdec.com/service/api/test/echo",
+            Ok(
+                APIResponseBuilder::new()
+                    .with_status_code(200)
+                    .with_body(br#"{
+                        "param1": "value1",
+                        "param2": "value2"
+                    }"#)
+                    .build()
+            )
+        );
+        let mut params = HashMap::new();
+        params.insert("param1".to_string(), "value1".to_string());
+        params.insert("param2".to_string(), "value2".to_string());
+
+        let result = test.echo(&params)
+            .expect("expected echo() to succeed");
+
+        assert_eq!(result.get("param1"), Some(&"value1".to_string()));
+        assert_eq!(result.get("param2"), Some(&"value2".to_string()));
+        assert!(conn.borrow().request_sent(
+            "GET",
+            "https://retdec.com/service/api/test/echo",
+            APIArgumentsBuilder::new()
+                .with_string_arg("param1", "value1")
+                .with_string_arg("param2", "value2")
+                .build()
+        ));
     }
 }

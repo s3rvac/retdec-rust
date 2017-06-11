@@ -84,4 +84,4 @@ The file-analyzing service.
 The testing service.
 
 * [Authentication](https://retdec.com/api/docs/test.html#authentication) ✔
-* [Parameter passing](https://retdec.com/api/docs/test.html#parameter-passing) ✗
+* [Parameter passing](https://retdec.com/api/docs/test.html#parameter-passing) ✔
