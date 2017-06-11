@@ -57,6 +57,27 @@ impl Test {
     }
 
     /// Echoes back the given parameters (key-value pairs).
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use retdec::error::Result;
+    /// # fn test() -> Result<()> {
+    /// use std::collections::HashMap;
+    /// use retdec::settings::Settings;
+    /// use retdec::test::Test;
+    ///
+    /// let settings = Settings::new()
+    ///     .with_api_key("MY-API-KEY");
+    /// let test = Test::new(settings);
+    /// let mut params = HashMap::new();
+    /// params.insert("param1".to_string(), "value1".to_string());
+    /// params.insert("param2".to_string(), "value2".to_string());
+    /// let result = test.echo(&params)?;
+    /// assert_eq!(result.get("param1"), Some(&"value1".to_string()));
+    /// assert_eq!(result.get("param2"), Some(&"value2".to_string()));
+    /// # Ok(()) } fn main() { test().unwrap() }
+    /// ```
     pub fn echo(&self, params: &HashMap<String, String>)
         -> Result<HashMap<String, String>>
     {
