@@ -3,6 +3,16 @@
 [![docs.rs](https://docs.rs/retdec/badge.svg)](https://docs.rs/retdec)
 [![crates.io](https://img.shields.io/crates/v/retdec.svg)](https://crates.io/crates/retdec)
 
+## WARNING
+
+The [retdec.com](https://retdec.com) decompilation service is to be disabled
+(see the [official
+announcement](https://retdec.com/news/?2018-06-07-New-Version-3-1)). This will
+render the library and tools in the present repository non-functional. I will
+keep the repository online in case it is helpful to anyone.
+
+## Description
+
 A Rust library and tools providing easy access to the
 [retdec.com](https://retdec.com) decompilation service through their public
 [REST API](https://retdec.com/api/).
